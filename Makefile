@@ -39,19 +39,19 @@ cmake_force:
 SHELL = /bin/sh
 
 # The CMake executable.
-CMAKE_COMMAND = /home/ramsay/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/192.5728.100/bin/cmake/linux/bin/cmake
+CMAKE_COMMAND = "/Users/samray/Library/Application Support/JetBrains/Toolbox/apps/CLion/ch-0/192.6262.62/CLion.app/Contents/bin/cmake/mac/bin/cmake"
 
 # The command to remove a file.
-RM = /home/ramsay/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/192.5728.100/bin/cmake/linux/bin/cmake -E remove -f
+RM = "/Users/samray/Library/Application Support/JetBrains/Toolbox/apps/CLion/ch-0/192.6262.62/CLion.app/Contents/bin/cmake/mac/bin/cmake" -E remove -f
 
 # Escaping for special characters.
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/ramsay/code/cpp/doubanCrawler
+CMAKE_SOURCE_DIR = /Users/samray/code/cpp/doubanCrawler
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/ramsay/code/cpp/doubanCrawler
+CMAKE_BINARY_DIR = /Users/samray/code/cpp/doubanCrawler
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -59,7 +59,7 @@ CMAKE_BINARY_DIR = /home/ramsay/code/cpp/doubanCrawler
 # Special rule for the target rebuild_cache
 rebuild_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
-	/home/ramsay/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/192.5728.100/bin/cmake/linux/bin/cmake -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+	"/Users/samray/Library/Application Support/JetBrains/Toolbox/apps/CLion/ch-0/192.6262.62/CLion.app/Contents/bin/cmake/mac/bin/cmake" -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
 .PHONY : rebuild_cache
 
 # Special rule for the target rebuild_cache
@@ -69,8 +69,8 @@ rebuild_cache/fast: rebuild_cache
 
 # Special rule for the target edit_cache
 edit_cache:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake cache editor..."
-	/usr/bin/ccmake -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "No interactive CMake dialog available..."
+	"/Users/samray/Library/Application Support/JetBrains/Toolbox/apps/CLion/ch-0/192.6262.62/CLion.app/Contents/bin/cmake/mac/bin/cmake" -E echo No\ interactive\ CMake\ dialog\ available.
 .PHONY : edit_cache
 
 # Special rule for the target edit_cache
@@ -80,9 +80,9 @@ edit_cache/fast: edit_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ramsay/code/cpp/doubanCrawler/CMakeFiles /home/ramsay/code/cpp/doubanCrawler/CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/samray/code/cpp/doubanCrawler/CMakeFiles /Users/samray/code/cpp/doubanCrawler/CMakeFiles/progress.marks
 	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ramsay/code/cpp/doubanCrawler/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/samray/code/cpp/doubanCrawler/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -111,6 +111,32 @@ depend:
 .PHONY : depend
 
 #=============================================================================
+# Target rules for targets named test
+
+# Build rule for target.
+test: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test
+.PHONY : test
+
+# fast build rule for target.
+test/fast:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/build
+.PHONY : test/fast
+
+#=============================================================================
+# Target rules for targets named main
+
+# Build rule for target.
+main: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 main
+.PHONY : main
+
+# fast build rule for target.
+main/fast:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/build
+.PHONY : main/fast
+
+#=============================================================================
 # Target rules for targets named http
 
 # Build rule for target.
@@ -123,12 +149,67 @@ http/fast:
 	$(MAKE) -f CMakeFiles/http.dir/build.make CMakeFiles/http.dir/build
 .PHONY : http/fast
 
+dom.o: dom.cpp.o
+
+.PHONY : dom.o
+
+# target to build an object file
+dom.cpp.o:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/dom.cpp.o
+.PHONY : dom.cpp.o
+
+dom.i: dom.cpp.i
+
+.PHONY : dom.i
+
+# target to preprocess a source file
+dom.cpp.i:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/dom.cpp.i
+.PHONY : dom.cpp.i
+
+dom.s: dom.cpp.s
+
+.PHONY : dom.s
+
+# target to generate assembly for a file
+dom.cpp.s:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/dom.cpp.s
+.PHONY : dom.cpp.s
+
+html.o: html.cpp.o
+
+.PHONY : html.o
+
+# target to build an object file
+html.cpp.o:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/html.cpp.o
+.PHONY : html.cpp.o
+
+html.i: html.cpp.i
+
+.PHONY : html.i
+
+# target to preprocess a source file
+html.cpp.i:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/html.cpp.i
+.PHONY : html.cpp.i
+
+html.s: html.cpp.s
+
+.PHONY : html.s
+
+# target to generate assembly for a file
+html.cpp.s:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/html.cpp.s
+.PHONY : html.cpp.s
+
 http.o: http.cc.o
 
 .PHONY : http.o
 
 # target to build an object file
 http.cc.o:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/http.cc.o
 	$(MAKE) -f CMakeFiles/http.dir/build.make CMakeFiles/http.dir/http.cc.o
 .PHONY : http.cc.o
 
@@ -138,6 +219,7 @@ http.i: http.cc.i
 
 # target to preprocess a source file
 http.cc.i:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/http.cc.i
 	$(MAKE) -f CMakeFiles/http.dir/build.make CMakeFiles/http.dir/http.cc.i
 .PHONY : http.cc.i
 
@@ -147,8 +229,36 @@ http.s: http.cc.s
 
 # target to generate assembly for a file
 http.cc.s:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/http.cc.s
 	$(MAKE) -f CMakeFiles/http.dir/build.make CMakeFiles/http.dir/http.cc.s
 .PHONY : http.cc.s
+
+test.o: test.cpp.o
+
+.PHONY : test.o
+
+# target to build an object file
+test.cpp.o:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/test.cpp.o
+.PHONY : test.cpp.o
+
+test.i: test.cpp.i
+
+.PHONY : test.i
+
+# target to preprocess a source file
+test.cpp.i:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/test.cpp.i
+.PHONY : test.cpp.i
+
+test.s: test.cpp.s
+
+.PHONY : test.s
+
+# target to generate assembly for a file
+test.cpp.s:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/test.cpp.s
+.PHONY : test.cpp.s
 
 # Help Target
 help:
@@ -157,11 +267,22 @@ help:
 	@echo "... clean"
 	@echo "... depend"
 	@echo "... rebuild_cache"
-	@echo "... http"
 	@echo "... edit_cache"
+	@echo "... test"
+	@echo "... main"
+	@echo "... http"
+	@echo "... dom.o"
+	@echo "... dom.i"
+	@echo "... dom.s"
+	@echo "... html.o"
+	@echo "... html.i"
+	@echo "... html.s"
 	@echo "... http.o"
 	@echo "... http.i"
 	@echo "... http.s"
+	@echo "... test.o"
+	@echo "... test.i"
+	@echo "... test.s"
 .PHONY : help
 
 
