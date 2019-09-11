@@ -29,7 +29,7 @@ class ElementData {
     std::set<std::string> classElement;
     if (clazz != attributes.end()) {
       std::string result = clazz->second;
-      String::split(result, classElement, '.');
+      doubanCrawler::split(result, classElement, '.');
     }
     return classElement;
   }
@@ -97,4 +97,4 @@ class Node {
 };
 }
 
-#endif DOUBANCRAWLER_DOM_H
+#endif // DOUBANCRAWLER_DOM_H

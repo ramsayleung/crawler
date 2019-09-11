@@ -8,16 +8,16 @@
 void testSplit() {
   std::string classes = "item.pic.info";
   std::set<std::string> classSet;
-  String::split(classes, classSet, '.');
+  doubanCrawler::split(classes, classSet, '.');
   EXPECT_EQ_INT(3, classSet.size());
 }
 
 void testStartsWith() {
   const std::string source = "tititoto";
   std::string prefix = "titi";
-  EXPECT_EQ_INT(1, String::startsWith(prefix, source));
+  EXPECT_EQ_INT(1, doubanCrawler::startsWith(prefix, source));
   prefix = "tito";
-  EXPECT_EQ_INT(true, String::startsWith(prefix, source, 2, 6));
+  EXPECT_EQ_INT(true, doubanCrawler::startsWith(prefix, source, 2, 6));
 }
 
 void testParse() {

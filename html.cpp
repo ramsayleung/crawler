@@ -8,7 +8,7 @@
 namespace doubanCrawler {
 
 bool doubanCrawler::Parser::startsWith(const std::string &prefix) {
-  return String::startsWith(prefix, input, pos, input.size());
+  return doubanCrawler::startsWith(prefix, input, pos, input.size());
 }
 
 bool doubanCrawler::Parser::eof() {
@@ -112,7 +112,7 @@ doubanCrawler::Parser::Parser(size_t _pos, std::string _input) {
   input = std::move(_input);
 }
 
-doubanCrawler::Node doubanCrawler::parse(const std::string &source) {
+doubanCrawler::Node parse(const std::string &source) {
   const std::vector<doubanCrawler::Node> nodes = doubanCrawler::Parser(0, source).parseNodes();
 
   // If the document contains a root element, just return it, Otherwise, create one.
