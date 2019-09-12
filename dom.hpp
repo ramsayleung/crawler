@@ -8,7 +8,7 @@
 #include <utility>
 #include <vector>
 
-#include "strings.h"
+#include "strings.hpp"
 namespace doubanCrawler {
 using AttrMap = std::map<std::string, std::string>;
 

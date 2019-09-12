@@ -8,9 +8,9 @@
 #include <cstdarg>
 #include <syslog.h>
 #include <string>
-#include "http.h"
+#include "http.hpp"
 #include <map>
-#include "utils.h"
+#include "utils.hpp"
 
 void error(const char *msg) {
   perror(msg);

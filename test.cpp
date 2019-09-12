@@ -1,9 +1,9 @@
 //
 // Created by Ramsay on 2019/9/9.
 //
-#include "test.h"
-#include "dom.h"
-#include "html.h"
+#include "test.hpp"
+#include "dom.hpp"
+#include "html.hpp"
 
 void testSplit() {
   std::string classes = "item.pic.info";

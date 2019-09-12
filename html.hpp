@@ -5,7 +5,7 @@
 #ifndef DOUBANCRAWLER_HTML_H
 #define DOUBANCRAWLER_HTML_H
 
-#include "dom.h"
+#include "dom.hpp"
 
 namespace doubanCrawler {
 
