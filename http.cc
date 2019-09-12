@@ -1,7 +1,7 @@
-#include <stdio.h> /* printf, sprintf */
-#include <stdlib.h> /* exit, atoi, malloc, free */
+#include <cstdio> /* printf, sprintf */
+#include <cstdlib> /* exit, atoi, malloc, free */
 #include <unistd.h> /* read, write, close */
-#include <string.h> /* memcpy, memset */
+#include <cstring> /* memcpy, memset */
 #include <sys/socket.h> /* socket, connect */
 #include <netinet/in.h> /* struct sockaddr_in, struct sockaddr */
 #include <netdb.h> /* struct hostent, gethostbyname */
@@ -12,49 +12,9 @@
 #include <map>
 #include "utils.h"
 
-void error(const char *msg) {
+void doubanCrawler::error(const char *msg) {
   perror(msg);
   exit(0);
-}
-
-int main(int argc, char *argv[]) {
-  /* first where are we going to send it? */
-  const std::string host = "stackoverflow.com";
-  const std::string service = "http";
-  const std::string method = method::GET;
-  const std::string path = "/";
-  int sockfd;
-  const char *httpRequestFormat = "%s %s HTTP/1.1\r\n";
-  char buffer[1024];
-
-  std::map<std::string, std::string> headers;
-  headers.insert(std::pair<std::string, std::string>(header::HOST, host));
-  headers.insert(std::pair<std::string, std::string>(header::CONNECTION, "close"));
-  /* allocate space for the message */
-  sprintf(buffer, httpRequestFormat, method.c_str(), path.c_str());
-  std::string requestBody = buffer;
-
-  /* fill in the parameters */
-  /* If client sends request without `Connection: close` header, the server with the connection open, and read block*/
-  for (auto const &element: headers) {
-    requestBody += element.first + constants::HTTP_COLON + element.second + constants::HTTP_SEPARATOR;
-  }
-  requestBody += constants::HTTP_SEPARATOR;
-  /* What are we going to send? */
-  printf("Request:\n%s\n", requestBody.c_str());
-
-  /* create the socket */
-  sockfd = tcp_connect(host.c_str(), service.c_str());
-
-  /* send request*/
-  send_request(sockfd, requestBody.c_str());
-
-  /* receive the response */
-  handle_response(sockfd);
-
-  /* close the socket */
-  close(sockfd);
-  return 0;
 }
 
 /**
@@ -63,7 +23,7 @@ int main(int argc, char *argv[]) {
  * @param serv 服务
  * @return socketfd
  */
-int tcp_connect(const char *host, const char *serv) {
+int doubanCrawler::tcp_connect(const char *host, const char *serv) {
   int sockfd, n;
   struct addrinfo hints, *res, *ressave;
   bzero(&hints, sizeof(struct addrinfo));
@@ -92,7 +52,7 @@ int tcp_connect(const char *host, const char *serv) {
   return sockfd;
 }
 
-void handle_response(int sockfd) {
+void doubanCrawler::handle_response(int sockfd) {
   int n = 0;
   char recvline[MAXLINE + 1];
   /* process response */
@@ -105,7 +65,7 @@ void handle_response(int sockfd) {
   exit(0);
 }
 
-void send_request(int sockfd, const char *message) {
+void doubanCrawler::send_request(int sockfd, const char *message) {
   int total = 0, sent = 0, bytes = 0;
   /* send the request */
   total = strlen(message);

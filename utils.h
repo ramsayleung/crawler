@@ -5,7 +5,7 @@
 #ifndef DOUBANCRAWLER_UTILS_H
 #define DOUBANCRAWLER_UTILS_H
 
-namespace {
+namespace doubanCrawler {
 // http header constants
 namespace header {
 const char *const CONNECTION = "Connection";
