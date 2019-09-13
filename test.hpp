@@ -8,24 +8,29 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <iostream>
 
 static int main_ret = 0;
 static int test_count = 0;
 static int test_pass = 0;
 
-#define EXPECT_EQ_BASE(equality, expect, actual, format) \
-    do {\
-        test_count++;\
-        if (equality)\
-            test_pass++;\
-        else {\
-            fprintf(stderr, "%s:%d: expect: " format " actual: " format "\n", __FILE__, __LINE__, expect, actual);\
-            main_ret = 1;\
-        }\
-    } while(0)
+#define EXPECT_EQ_BASE(equality, expect, actual)                       \
+    do {                                                               \
+        test_count++;                                                  \
+        if (equality)                                                  \
+            test_pass++;                                               \
+        else {                                                         \
+            std::cerr << "expect: " << expect << "actual: " << actual; \
+            main_ret = 1;                                              \
+        }                                                              \
+    } while (0)
 
-#define EXPECT_EQ_INT(expect, actual) EXPECT_EQ_BASE((expect) == (actual), expect, actual, "%d")
+#define EXPECT_EQ_INT(expect, actual) EXPECT_EQ_BASE((expect) == (actual), expect, actual)
 
-#define EXPECT_EQ_STRING(expect, actual) EXPECT_EQ_BASE((expect) == (actual), expect, actual, "%s")
+#define EXPECT_EQ_BOOL(expect, actual) EXPECT_EQ_BASE((expect) == (actual), expect, actual)
 
-#endif //DOUBANCRAWLER_TEST_H
+#define EXPECT_EQ_TRUE(actual) EXPECT_EQ_BASE((true) == (actual), true, actual)
+
+#define EXPECT_EQ_STRING(expect, actual) EXPECT_EQ_BASE((expect) == (actual), expect, actual)
+
+#endif  //DOUBANCRAWLER_TEST_H

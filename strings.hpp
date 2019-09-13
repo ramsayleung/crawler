@@ -9,15 +9,7 @@
 #include <algorithm>
 #include <iterator>
 
-namespace String {
-
-/**
- * split the string and insert the result into container
- * @tparam Container something to hold the result
- * @param str the source string
- * @param cont container
- * @param delim delimiter
- */
+namespace doubanCrawler {
 template<class Container>
 void split(const std::string &str, Container &cont, char delim = ' ') {
   std::size_t current, previous = 0;
@@ -30,12 +22,12 @@ void split(const std::string &str, Container &cont, char delim = ' ') {
   cont.insert(str.substr(previous, current - previous));
 }
 
-bool startsWith(const std::string &prefix, const std::string &source) {
+inline bool startsWith(const std::string &prefix, const std::string &source) {
   return source.rfind(prefix, 0) == 0;
 }
 
-bool startsWith(const std::string &prefix, const std::string &source, size_t begin, size_t end) {
+inline bool startsWith(const std::string &prefix, const std::string &source, size_t begin, size_t end) {
   return startsWith(prefix, source.substr(begin, end));
 }
 }
-#endif //DOUBANCRAWLER_STRINGS_H
+#endif // DOUBANCRAWLER_STRINGS_H

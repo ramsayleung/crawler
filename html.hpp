@@ -63,4 +63,4 @@ doubanCrawler::Node parse(const std::string &source);
 
 }
 
-#endif DOUBANCRAWLER_HTML_H
+#endif // DOUBANCRAWLER_HTML_H

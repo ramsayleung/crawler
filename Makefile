@@ -123,39 +123,13 @@ test/fast:
 	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/build
 .PHONY : test/fast
 
-#=============================================================================
-# Target rules for targets named http
-
-# Build rule for target.
-http: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 http
-.PHONY : http
-
-# fast build rule for target.
-http/fast:
-	$(MAKE) -f CMakeFiles/http.dir/build.make CMakeFiles/http.dir/build
-.PHONY : http/fast
-
-#=============================================================================
-# Target rules for targets named main
-
-# Build rule for target.
-main: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 main
-.PHONY : main
-
-# fast build rule for target.
-main/fast:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/build
-.PHONY : main/fast
-
 dom.o: dom.cpp.o
 
 .PHONY : dom.o
 
 # target to build an object file
 dom.cpp.o:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/dom.cpp.o
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/dom.cpp.o
 .PHONY : dom.cpp.o
 
 dom.i: dom.cpp.i
@@ -164,7 +138,7 @@ dom.i: dom.cpp.i
 
 # target to preprocess a source file
 dom.cpp.i:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/dom.cpp.i
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/dom.cpp.i
 .PHONY : dom.cpp.i
 
 dom.s: dom.cpp.s
@@ -173,7 +147,7 @@ dom.s: dom.cpp.s
 
 # target to generate assembly for a file
 dom.cpp.s:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/dom.cpp.s
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/dom.cpp.s
 .PHONY : dom.cpp.s
 
 html.o: html.cpp.o
@@ -182,7 +156,7 @@ html.o: html.cpp.o
 
 # target to build an object file
 html.cpp.o:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/html.cpp.o
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/html.cpp.o
 .PHONY : html.cpp.o
 
 html.i: html.cpp.i
@@ -191,7 +165,7 @@ html.i: html.cpp.i
 
 # target to preprocess a source file
 html.cpp.i:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/html.cpp.i
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/html.cpp.i
 .PHONY : html.cpp.i
 
 html.s: html.cpp.s
@@ -200,7 +174,7 @@ html.s: html.cpp.s
 
 # target to generate assembly for a file
 html.cpp.s:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/html.cpp.s
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/html.cpp.s
 .PHONY : html.cpp.s
 
 http.o: http.cpp.o
@@ -209,8 +183,7 @@ http.o: http.cpp.o
 
 # target to build an object file
 http.cpp.o:
-	$(MAKE) -f CMakeFiles/http.dir/build.make CMakeFiles/http.dir/http.cpp.o
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/http.cpp.o
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/http.cpp.o
 .PHONY : http.cpp.o
 
 http.i: http.cpp.i
@@ -219,8 +192,7 @@ http.i: http.cpp.i
 
 # target to preprocess a source file
 http.cpp.i:
-	$(MAKE) -f CMakeFiles/http.dir/build.make CMakeFiles/http.dir/http.cpp.i
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/http.cpp.i
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/http.cpp.i
 .PHONY : http.cpp.i
 
 http.s: http.cpp.s
@@ -229,8 +201,7 @@ http.s: http.cpp.s
 
 # target to generate assembly for a file
 http.cpp.s:
-	$(MAKE) -f CMakeFiles/http.dir/build.make CMakeFiles/http.dir/http.cpp.s
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/http.cpp.s
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/http.cpp.s
 .PHONY : http.cpp.s
 
 test.o: test.cpp.o
@@ -268,9 +239,7 @@ help:
 	@echo "... depend"
 	@echo "... rebuild_cache"
 	@echo "... test"
-	@echo "... http"
 	@echo "... edit_cache"
-	@echo "... main"
 	@echo "... dom.o"
 	@echo "... dom.i"
 	@echo "... dom.s"
