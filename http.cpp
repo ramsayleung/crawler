@@ -52,17 +52,17 @@ int doubanCrawler::tcp_connect(const char *host, const char *serv) {
     return sockfd;
 }
 
-void doubanCrawler::handle_response(int sockfd) {
+std::string doubanCrawler::handle_response(int sockfd) {
     int n = 0;
     char recvline[MAXLINE + 1];
     /* process response */
-    printf("Response:\n");
+    std::string buffer;
 
     while ((n = read(sockfd, recvline, MAXLINE)) > 0) {
         recvline[n] = 0; /* null terminate */
-        fputs(recvline, stdout);
+        buffer += recvline;
     }
-    exit(0);
+    return std::string(buffer);
 }
 
 void doubanCrawler::send_request(int sockfd, const char *message) {
@@ -79,7 +79,7 @@ void doubanCrawler::send_request(int sockfd, const char *message) {
     } while (sent < total);
 }
 
-void doubanCrawler::http_get(const std::string &host) {
+std::string doubanCrawler::http_get(const std::string &host) {
     const std::string protocol = "http";
     const std::string method = doubanCrawler::method::GET;
     const std::string path = "/";
@@ -100,8 +100,9 @@ void doubanCrawler::http_get(const std::string &host) {
         requestBody += element.first + doubanCrawler::constants::HTTP_COLON + element.second + doubanCrawler::constants::HTTP_SEPARATOR;
     }
     requestBody += doubanCrawler::constants::HTTP_SEPARATOR;
+
     /* What are we going to send? */
-    printf("Request:\n%s\n", requestBody.c_str());
+    TRACE(("Request:%s\n", requestBody.c_str()));
 
     /* create the socket */
     sockfd = doubanCrawler::tcp_connect(host.c_str(), protocol.c_str());
@@ -110,8 +111,10 @@ void doubanCrawler::http_get(const std::string &host) {
     doubanCrawler::send_request(sockfd, requestBody.c_str());
 
     /* receive the response */
-    doubanCrawler::handle_response(sockfd);
+    std::string response = doubanCrawler::handle_response(sockfd);
 
     /* close the socket */
     close(sockfd);
+
+    return std::string(response);
 }

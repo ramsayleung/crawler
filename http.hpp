@@ -10,13 +10,13 @@ namespace doubanCrawler {
 
 int tcp_connect(const char *host, const char *serv);
 
-void handle_response(int sockfd);
+std::string handle_response(int sockfd);
 
 void send_request(int sockfd, const char *message);
 
 void error(const char *msg);
 
-void http_get(const std::string &host);
+std::string http_get(const std::string &host);
 
 }  // namespace doubanCrawler
 #endif  //DOUBANCRAWLER_HTTP_H

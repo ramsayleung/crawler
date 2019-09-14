@@ -5,3 +5,5 @@ cmake_install.cmake
 cmake-build-debug/
 CMakeFiles/
 Makefile
+build/
+*.gch

@@ -9,11 +9,17 @@
 #include "http.hpp"
 #include "utils.hpp"
 
+#define DEBUG 1
+
+void testEqualMacro() {
+    EXPECT_EQ_TRUE(true);
+}
+
 void testSplit() {
     std::string classes = "item.pic.info";
     std::set<std::string> classSet;
     doubanCrawler::split(classes, classSet, '.');
-    EXPECT_EQ_INT(3, classSet.size());
+    EXPECT_EQ_UNSIGNED_LONG(3lu, classSet.size());
 }
 
 void testStartsWith() {
@@ -28,7 +34,7 @@ void testParseTagName() {
     const std::string source = R"(<div id="main" class="test"></div>)";
     doubanCrawler::Parser parser(0, source);
     std::string tagName = parser.parseTagName();
-    EXPECT_EQ_STRING(tagName.c_str(), "div");
+    EXPECT_EQ_STRING("div", tagName.c_str());
 }
 
 void testParseAttributes() {
@@ -60,10 +66,12 @@ void testHttp() {
 }
 
 int main(int argc, char *argv[]) {
+    testEqualMacro();
     testSplit();
     testStartsWith();
     testParseTagName();
     testParseAttributes();
     testParse();
     testHttp();
+    PRINT_TEST_RESULT();
 }
