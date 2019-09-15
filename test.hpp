@@ -21,7 +21,7 @@ static int test_pass = 0;
         if (equality)                                                                                                                                                               \
             test_pass++;                                                                                                                                                            \
         else {                                                                                                                                                                      \
-            fprintf(stderr, "test: function %s(): %s:%d  Assertion `%s` failed. expect: " format " actual: " format "\n", __func__, __FILE__, __LINE__, #equality, expect, actual); \
+            fprintf(stderr, "function %s(): %s:%d  Assertion `%s` failed. expect: " format " actual: " format "\n", __func__, __FILE__, __LINE__, #equality, expect, actual); \
             main_ret = 1;                                                                                                                                                           \
         }                                                                                                                                                                           \
     } while (0)
@@ -37,6 +37,6 @@ static int test_pass = 0;
 
 #define EXPECT_EQ_TRUE(actual) EXPECT_EQ_BASE(true == (actual), true, actual, "%d")
 
-#define EXPECT_EQ_STRING(expect, actual) EXPECT_EQ_BASE((expect) == (actual), expect, actual, "%s")
+#define EXPECT_EQ_CSTRING(expect, actual) EXPECT_EQ_BASE(strcmp((expect),(actual))==0, expect, actual, "%s")
 
 #endif  //DOUBANCRAWLER_TEST_H
