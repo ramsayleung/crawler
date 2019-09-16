@@ -29,5 +29,9 @@ inline bool startsWith(const std::string &prefix, const std::string &source) {
 inline bool startsWith(const std::string &prefix, const std::string &source, size_t begin, size_t end) {
   return startsWith(prefix, source.substr(begin, end));
 }
+
+inline bool contains(const std::string &substring, const std::string &source){
+  return (source.find(substring)!=std::string::npos);
+}
 }
 #endif // DOUBANCRAWLER_STRINGS_H

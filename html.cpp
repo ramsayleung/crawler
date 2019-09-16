@@ -4,6 +4,7 @@
 
 #include "html.hpp"
 #include <cassert>
+#include <regex>
 #include <utility>
 namespace doubanCrawler {
 
@@ -36,6 +37,17 @@ std::string doubanCrawler::Parser::consumeWhile(Predicate predicate) {
 
 void doubanCrawler::Parser::consumeWhitespace() {
     doubanCrawler::Parser::consumeWhile([](char c) -> bool { return isspace(c); });
+}
+
+// delete all comment tag
+void doubanCrawler::Parser::consumeComment() {
+    std::string commentDescriptor("<!--");
+    if (!doubanCrawler::contains(commentDescriptor, input)) {
+        return;
+    }
+    std::string emptyString("");
+    std::regex pattern(R"(<!--.*?-->)");
+    std::regex_replace(input, pattern, emptyString);
 }
 
 doubanCrawler::Node doubanCrawler::Parser::parseText() {
@@ -89,6 +101,7 @@ doubanCrawler::Node doubanCrawler::Parser::parseElement() {
     return doubanCrawler::Node(tagName, attributes, children);
 }
 std::vector<doubanCrawler::Node> doubanCrawler::Parser::parseNodes() {
+    consumeComment();
     std::vector<doubanCrawler::Node> nodes;
     while (true) {
         consumeWhitespace();

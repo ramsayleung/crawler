@@ -34,10 +34,10 @@ class ElementData {
     }
     return classElement;
   }
-  const std::string &getTagName() const {
+  [[nodiscard]]const std::string &getTagName() const {
     return tagName;
   }
-  const AttrMap &getAttributes() const {
+  [[nodiscard]] const AttrMap &getAttributes() const {
     return attributes;
   }
 
@@ -77,7 +77,7 @@ class Node {
     children = node.children;
     nodeType = node.nodeType;
   }
-  std::vector<Node> getChildren() {
+  [[nodiscard]]std::vector<Node> getChildren() const {
     return children;
   }
 

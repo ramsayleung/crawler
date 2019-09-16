@@ -39,6 +39,9 @@ class Parser {
   // Consume and discard zero or more whitespace characters
   void consumeWhitespace();
 
+  // Consume and discard zero or more comment 
+  void consumeComment();
+
   // Consume character until `test` return false.
   template<class Predicate>
   std::string consumeWhile(Predicate predicate);
