@@ -38,7 +38,7 @@ void testParseElement() {
     const std::string source = R"(<div id="main" class="test"></div>)";
     doubanCrawler::Parser parser(0, source);
     doubanCrawler::Node node = parser.parseElement();
-    std::string tagName = node.getNodeType().element.getTagName();
+    std::string tagName = node.getNodeData().element.getTagName();
     EXPECT_EQ_CSTRING("div", tagName.c_str());
 }
 
@@ -46,11 +46,11 @@ void testParseNode() {
     const std::string source = R"(<p>hello world</p>)";
     doubanCrawler::Parser parser(0, source);
     doubanCrawler::Node node = parser.parseNode();
-    EXPECT_EQ_TRUE(node.getNodeType().isElementData());
+    EXPECT_EQ_TRUE(node.getNodeData().isElementData());
     EXPECT_EQ_TRUE(node.getChildren().size() == 1);
     doubanCrawler::Node childrenNode = node.getChildren().at(0);
-    EXPECT_EQ_TRUE(childrenNode.getNodeType().isText());
-    EXPECT_EQ_CSTRING("hello world", childrenNode.getNodeType().text.c_str());
+    EXPECT_EQ_TRUE(childrenNode.getNodeData().isText());
+    EXPECT_EQ_CSTRING("hello world", childrenNode.getNodeData().text.c_str());
 }
 
 void testParseAttributes() {
@@ -58,7 +58,7 @@ void testParseAttributes() {
     doubanCrawler::Parser parser(0, source);
     std::vector<doubanCrawler::Node> nodes = parser.parseNodes();
     doubanCrawler::Node node = nodes.at(0);
-    EXPECT_EQ_TRUE(node.getNodeType().isElementData());
+    EXPECT_EQ_TRUE(node.getNodeData().isElementData());
 }
 
 void testParse() {
@@ -91,8 +91,25 @@ void testHttp() {
     const std::string host = "stackoverflow.com";
     doubanCrawler::http_get(host);
 }
+void testGetElementsByTag() {
+    std::ifstream file("source/parseTest.html");
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+    std::string source = buffer.str();
+    doubanCrawler::Node node = doubanCrawler::parse(source);
+    doubanCrawler::Document *doc = (doubanCrawler::Document *)&node;
+    doubanCrawler::Elements elements = doc->getElementsByTag(std::string("div"));
+    for (auto const &result : elements) {
+        TRACE(("tagName: %s\n", result.getNodeData().element.getTagName().c_str()));
+        doubanCrawler::AttrMap attributes = result.getNodeData().element.getAttributes();
+        for (auto const &keyValuePair : attributes) {
+            TRACE(("key: %s value: %s\n", keyValuePair.first.c_str(), keyValuePair.second.c_str()));
+        }
+    }
+}
 
 int main(int argc, char *argv[]) {
+    testGetElementsByTag();
     testEqualMacro();
     testSplit();
     testStartsWith();

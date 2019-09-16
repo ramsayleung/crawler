@@ -1,0 +1,9 @@
+digraph MultipleNodeTree{
+    html->body;    
+    body->div1[label="class=\"info\""];
+    body->div2[label="class=\"info\""];
+    div1->em;
+    div1->a;
+    div2->divhd;
+    div2->divbd;
+}
