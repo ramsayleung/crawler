@@ -9,3 +9,4 @@ build/
 *.gch
 .ccls-cache/
 /CMakeLists.txt.user
+test
