@@ -5,12 +5,12 @@
 #ifndef DOUBANCRAWLER_STRINGS_H
 #define DOUBANCRAWLER_STRINGS_H
 
-#include <sstream>
 #include <algorithm>
 #include <iterator>
+#include <sstream>
 
 namespace doubanCrawler {
-template<class Container>
+template <class Container>
 void split(const std::string &str, Container &cont, char delim = ' ') {
   std::size_t current, previous = 0;
   current = str.find(delim);
@@ -22,16 +22,20 @@ void split(const std::string &str, Container &cont, char delim = ' ') {
   cont.insert(str.substr(previous, current - previous));
 }
 
+// Check if `source` starts with `prefix`
 inline bool startsWith(const std::string &prefix, const std::string &source) {
   return source.rfind(prefix, 0) == 0;
 }
 
-inline bool startsWith(const std::string &prefix, const std::string &source, size_t begin, size_t end) {
+// Check if `source` starts with `prefix`
+inline bool startsWith(const std::string &prefix, const std::string &source,
+                       size_t begin, size_t end) {
   return startsWith(prefix, source.substr(begin, end));
 }
 
-inline bool contains(const std::string &substring, const std::string &source){
-  return (source.find(substring)!=std::string::npos);
+// Check if `source` contains `substring`
+inline bool contains(const std::string &substring, const std::string &source) {
+  return (source.find(substring) != std::string::npos);
 }
-}
-#endif // DOUBANCRAWLER_STRINGS_H
+}  // namespace doubanCrawler
+#endif  // DOUBANCRAWLER_STRINGS_H

@@ -108,8 +108,7 @@ void testGetElementsByTag() {
   buffer << file.rdbuf();
   std::string source = buffer.str();
   doubanCrawler::Node node = doubanCrawler::parse(source);
-  doubanCrawler::Document *doc = (doubanCrawler::Document *)&node;
-  doubanCrawler::Elements elements = doc->getElementsByTag(std::string("div"));
+  doubanCrawler::Elements elements = node.getElementsByTag(std::string("div"));
   for (auto const &result : elements) {
     printNode(result);
   }
@@ -121,8 +120,7 @@ void testGetElementById() {
   buffer << file.rdbuf();
   std::string source = buffer.str();
   doubanCrawler::Node node = doubanCrawler::parse(source);
-  doubanCrawler::Document *doc = (doubanCrawler::Document *)&node;
-  doubanCrawler::Node result = doc->getElementById("main");
+  doubanCrawler::Node result = node.getElementById("main");
   printNode(result);
   EXPECT_EQ_CSTRING(
       result.getNodeData().element.getAttributes().at("class").c_str(), "test");

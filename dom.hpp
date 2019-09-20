@@ -11,7 +11,10 @@
 #include <vector>
 #include "strings.hpp"
 namespace doubanCrawler {
+class Node;
 using AttrMap = std::map<std::string, std::string>;
+
+using Elements = std::vector<Node>;
 
 class ElementData {
  public:
@@ -58,7 +61,7 @@ class Node {
     nodeData.text = str;
     ElementData emptyElement;
     nodeData.element = emptyElement;
-  };
+  }
   explicit Node(const std::string &_name, const AttrMap &_attrMap,
                 std::vector<Node> _children) {
     children = std::move(_children);
@@ -71,24 +74,10 @@ class Node {
     children = node.children;
     nodeData = node.nodeData;
   }
-  virtual ~Node() = default;
   [[nodiscard]] std::vector<Node> getChildren() const { return children; }
 
   [[nodiscard]] NodeData getNodeData() const { return nodeData; }
 
- private:
-  // data common to all nodes;
-  std::vector<Node> children;
-  // data specific to each node type;
-  NodeData nodeData;
-};
-
-using Elements = std::vector<Node>;
-
-class Document : public Node {
-  using Node::Node;
-
- public:
   template <class Predicate>
   Elements getElementsByPredicate(Predicate predicate) {
     Elements elementList;
@@ -126,6 +115,12 @@ class Document : public Node {
   }
 
  private:
+  // data common to all nodes;
+  std::vector<Node> children;
+  // data specific to each node type;
+
+  NodeData nodeData;
+
   static Node *findFirstElementByTagName(const std::string &tagName,
                                          Node *node) {
     if (node->getNodeData().isElementData() &&
@@ -141,7 +136,8 @@ class Document : public Node {
     }
     return nullptr;
   }
-};
+};  // namespace doubanCrawler
+
 }  // namespace doubanCrawler
 
 #endif  // DOUBANCRAWLER_DOM_H
