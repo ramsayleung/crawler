@@ -99,15 +99,16 @@ class Node {
     return elementList;
   }
 
-  // breadth first search
+  // Search element list by tag name by bfs(breadth first search)
   Elements getElementsByTag(const std::string &tagName) {
-    return getElementsByPredicate([&tagName](Node node) -> bool {
+    return getElementsByPredicate([&tagName](const Node& node) -> bool {
       return node.getNodeData().element.getTagName() == tagName;
     });
   }
 
+  // Get element list by element id.
   Node getElementById(const std::string &id) {
-    Elements elements = getElementsByPredicate([&id](Node node) -> bool {
+    Elements elements = getElementsByPredicate([&id](const Node& node) -> bool {
       return node.getNodeData().element.id() == id;
     });
     assert(elements.size() == 1);
@@ -117,8 +118,8 @@ class Node {
  private:
   // data common to all nodes;
   std::vector<Node> children;
-  // data specific to each node type;
 
+  // data specific to each node type;
   NodeData nodeData;
 
   static Node *findFirstElementByTagName(const std::string &tagName,
@@ -136,7 +137,7 @@ class Node {
     }
     return nullptr;
   }
-};  // namespace doubanCrawler
+};
 
 }  // namespace doubanCrawler
 

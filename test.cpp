@@ -2,8 +2,6 @@
 // Created by Ramsay on 2019/9/9.
 //
 #include "test.hpp"
-/* read, write, close */
-#include <unistd.h>
 #include "dom.hpp"
 #include "html.hpp"
 #include "http.hpp"
@@ -11,7 +9,6 @@
 
 #include <fstream>
 #include <regex>
-#include <streambuf>
 #include <string>
 
 void testEqualMacro() {
@@ -69,6 +66,14 @@ void testParse() {
   doubanCrawler::Node node = doubanCrawler::parse(source);
 }
 
+void testParseSelfClosingTag(){
+  std::ifstream file("source/parseSelfClosingTagTest.html");
+  std::stringstream buffer;
+  buffer << file.rdbuf();
+  std::string source = buffer.str();
+  doubanCrawler::Node node = doubanCrawler::parse(source);
+}
+
 void testStringContains() {
   std::string substring("needle");
   std::string source("There are two needles in this haystack.");
@@ -79,7 +84,7 @@ void testConsumeComment() {
   std::ifstream file("source/commentTest.html");
   std::stringstream buffer;
   buffer << file.rdbuf();
-  std::string emptyString("");
+  std::string emptyString;
   std::regex pattern(R"(<!--.*?-->)");
   std::string result = std::regex_replace(buffer.str(), pattern, emptyString);
   std::string commentDescriptor("<!--");
@@ -126,7 +131,7 @@ void testGetElementById() {
       result.getNodeData().element.getAttributes().at("class").c_str(), "test");
 }
 
-int main(void) {
+int main() {
   testGetElementsByTag();
   testGetElementById();
   testEqualMacro();
@@ -139,5 +144,6 @@ int main(void) {
   testParse();
   testHttp();
   testConsumeComment();
+  //testParseSelfClosingTag();
   PRINT_TEST_RESULT();
 }
