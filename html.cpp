@@ -3,9 +3,11 @@
 //
 
 #include "html.hpp"
+#include "dom.hpp"
 #include <cassert>
 #include <regex>
 #include <utility>
+#include <vector>
 namespace doubanCrawler {
 
 bool doubanCrawler::Parser::startsWith(const std::string &prefix) {
@@ -13,6 +15,11 @@ bool doubanCrawler::Parser::startsWith(const std::string &prefix) {
 }
 
 bool doubanCrawler::Parser::eof() { return pos >= input.size(); }
+
+bool doubanCrawler::Parser::isSelfClosingTag(
+    const std::string &currentTagName) {
+  return SELF_CLOSING_TAGS.find(currentTagName) != SELF_CLOSING_TAGS.end();
+}
 
 char doubanCrawler::Parser::nextChar() { return input.c_str()[pos]; }
 
@@ -88,7 +95,19 @@ doubanCrawler::Node doubanCrawler::Parser::parseElement() {
   assert(consumeChar() == '<');
   const std::string tagName = parseTagName();
   const std::map<std::string, std::string> attributes = parseAttributes();
-  assert(consumeChar() == '>');
+  if (isSelfClosingTag(tagName)) {
+    // self-closing has various format, such as <img> or <img/>
+    if (nextChar() == '>') {
+      assert(consumeChar() == '>');
+    } else {
+      assert(consumeChar() == '/');
+      assert(consumeChar() == '>');
+    }
+    const std::vector<doubanCrawler::Node> emptyChild;
+    return doubanCrawler::Node(tagName, attributes, emptyChild);
+  } else {
+    assert(consumeChar() == '>');
+  }
 
   // Contents.
   const std::vector<doubanCrawler::Node> children = parseNodes();

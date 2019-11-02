@@ -5,6 +5,8 @@
 #ifndef DOUBANCRAWLER_HTML_H
 #define DOUBANCRAWLER_HTML_H
 
+#include <set>
+#include <string>
 #include "dom.hpp"
 
 namespace doubanCrawler {
@@ -57,9 +59,13 @@ class Parser {
 
   /// Return true if all input is consumed.
   bool eof();
+
+  /// Check if `currentTagName` is a self-closing tag or not.
+  bool isSelfClosingTag(const std::string& currentTagName);
  private:
   size_t pos;
   std::string input;
+  inline static const std::set<std::string> SELF_CLOSING_TAGS = {"area", "base", "br", "col", "embed", "hr", "img", "input", "keygen", "link", "menuitem","meta", "param", "source", "track", "wbr"};
 };
 
 doubanCrawler::Node parse(const std::string &source);

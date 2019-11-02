@@ -11,6 +11,16 @@
 #include <regex>
 #include <string>
 
+void printNode(const doubanCrawler::Node &result) {
+  TRACE(("tagName: %s\n", result.getNodeData().element.getTagName().c_str()));
+  doubanCrawler::AttrMap attributes =
+      result.getNodeData().element.getAttributes();
+  for (auto const &keyValuePair : attributes) {
+    TRACE(("key: %s value: %s\n", keyValuePair.first.c_str(),
+           keyValuePair.second.c_str()));
+  }
+}
+
 void testEqualMacro() {
   EXPECT_EQ_TRUE(true);
   EXPECT_EQ_CSTRING("div", "div");
@@ -66,12 +76,16 @@ void testParse() {
   doubanCrawler::Node node = doubanCrawler::parse(source);
 }
 
-void testParseSelfClosingTag(){
+void testParseSelfClosingTag() {
   std::ifstream file("source/parseSelfClosingTagTest.html");
   std::stringstream buffer;
   buffer << file.rdbuf();
   std::string source = buffer.str();
   doubanCrawler::Node node = doubanCrawler::parse(source);
+  doubanCrawler::Elements elements = node.getElementsByTag(std::string("img"));
+  for (auto const &result : elements) {
+    printNode(result);
+  }
 }
 
 void testStringContains() {
@@ -95,16 +109,6 @@ void testHttp() {
   /* first where are we going to send it? */
   const std::string host = "stackoverflow.com";
   doubanCrawler::http_get(host);
-}
-
-void printNode(const doubanCrawler::Node &result) {
-  TRACE(("tagName: %s\n", result.getNodeData().element.getTagName().c_str()));
-  doubanCrawler::AttrMap attributes =
-      result.getNodeData().element.getAttributes();
-  for (auto const &keyValuePair : attributes) {
-    TRACE(("key: %s value: %s\n", keyValuePair.first.c_str(),
-           keyValuePair.second.c_str()));
-  }
 }
 
 void testGetElementsByTag() {
@@ -144,6 +148,6 @@ int main() {
   testParse();
   testHttp();
   testConsumeComment();
-  //testParseSelfClosingTag();
+  testParseSelfClosingTag();
   PRINT_TEST_RESULT();
 }
