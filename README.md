@@ -6,6 +6,10 @@
 
 ## Html解析
 
+主要的工作就是将html文件解析成DOM树, 然后提供对应的查找方法, 在DOM树上按Id(或者Tag name)查找指定的节点, 查找的方式多种多样, 如xpath, 或者Jquery css selector等. Html解析的工作主要是由`html`和`dom`两个文件负责, `html`负责相应的解析工作, `dom`负责承载解析后相应的数据结构(也就是DOM树). `html`解析的策略是从`html`节点开始, 然后递归查询(此外省略, 到时补充), 相应的方法调用如下图:
+
+![](./doc/html_parser_flow.svg)
+
 ## Json解析
 
 ## 网络与调度
