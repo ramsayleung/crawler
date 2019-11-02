@@ -83,6 +83,12 @@ void testParseSelfClosingTag() {
   std::string source = buffer.str();
   doubanCrawler::Node node = doubanCrawler::parse(source);
   doubanCrawler::Elements elements = node.getElementsByTag(std::string("img"));
+  auto const element = elements[0];
+  const doubanCrawler::AttrMap attributes =
+      element.getNodeData().element.getAttributes();
+  auto iterator = attributes.find("width");
+  EXPECT_EQ_TRUE(iterator != attributes.end());
+  EXPECT_EQ_CSTRING("100", iterator->second.c_str());
   for (auto const &result : elements) {
     printNode(result);
   }
