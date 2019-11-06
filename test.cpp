@@ -5,6 +5,7 @@
 #include "dom.hpp"
 #include "html.hpp"
 #include "http.hpp"
+#include "selector.hpp"
 #include "utils.hpp"
 
 #include <fstream>
@@ -88,9 +89,6 @@ void testParseSelfClosingTag() {
   auto iterator = attributes.find("width");
   ASSERT_TRUE(iterator != attributes.end());
   ASSERT_CSTRING_EQ("100", iterator->second.c_str());
-  for (auto const &result : elements) {
-    printNode(result);
-  }
 }
 
 void testStringContains() {
@@ -140,7 +138,44 @@ void testGetElementById() {
       result.getNodeData().element.getAttributes().at("class").c_str(), "test");
 }
 
+void testMatchesWhitespace() {
+  crawler::TokenQueue tokenQueue(" test");
+  ASSERT_TRUE(tokenQueue.matchesWhitespace());
+}
+
+void testMatch() {
+  crawler::TokenQueue tokenQueue("to Tutorialspoint", 3);
+  ASSERT_TRUE(tokenQueue.matches("Tutorials"));
+}
+
+void testMatchesChomp() {
+  crawler::TokenQueue tokenQueue("to Tutorialspoint", 3);
+  ASSERT_TRUE(tokenQueue.matchesChomp("Tutorials"));
+  ASSERT_UNSIGNED_LONG_EQ(12UL, tokenQueue.getPos());
+}
+
+void testMatchesWords() {
+  crawler::TokenQueue tokenQueue("a[href]");
+  ASSERT_TRUE(tokenQueue.matchesWords());
+}
+
+void testMatchesAny() {
+  crawler::TokenQueue tokenQueue("a[href]");
+  ASSERT_TRUE(tokenQueue.matchesAny(std::array<char, 2>({'b', 'a'})));
+}
+
+void testConsumeCssIdentifier() {
+  crawler::TokenQueue tokenQueue("a[href]");
+  ASSERT_CSTRING_EQ("a", tokenQueue.consumeCssIdentifier().c_str());
+}
+
 int main() {
+  testConsumeCssIdentifier();
+  testMatchesAny();
+  testMatchesWords();
+  testMatchesChomp();
+  testMatch();
+  testMatchesWhitespace();
   testGetElementsByTag();
   testGetElementById();
   testEqualMacro();
