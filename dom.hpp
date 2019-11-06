@@ -21,23 +21,12 @@ public:
   ElementData() = default;
   ElementData(std::string tagName, AttrMap attributes)
       : tagName(std::move(tagName)), attributes(std::move(attributes)) {}
-  std::string id() {
-    auto result = attributes.find("id");
-    if (result != attributes.end()) {
-      return result->second;
-    } else {
-      return std::string("");
-    }
-  }
-  std::set<std::string> classes() {
-    auto clazz = attributes.find("class");
-    std::set<std::string> classElement;
-    if (clazz != attributes.end()) {
-      std::string result = clazz->second;
-      crawler::split(result, classElement, '.');
-    }
-    return classElement;
-  }
+  /// Get id of element
+  std::string id();
+
+  /// Get value of class.
+  std::string clazz();
+
   [[nodiscard]] const std::string &getTagName() const { return tagName; }
   [[nodiscard]] const AttrMap &getAttributes() const { return attributes; }
 
@@ -74,11 +63,50 @@ public:
     children = node.children;
     nodeData = node.nodeData;
   }
+
+  /// get children elements
   [[nodiscard]] std::vector<Node> getChildren() const { return children; }
 
+  /// get node data
   [[nodiscard]] NodeData getNodeData() const { return nodeData; }
 
-  /// Get elements by call `predicate(node)`
+  /// Search element list by tag name by bfs(breadth first search)
+  Nodes getElementsByTag(const std::string &tagName);
+
+  /// Get element list by element id.
+  Node getElementById(const std::string &id);
+
+  const Nodes select(const std::string &cssQuery) const;
+
+private:
+  /// data common to all nodes;
+  std::vector<Node> children;
+
+  /// data specific to each node type;
+  NodeData nodeData;
+
+  const Node *getFirstElementByTagName(const std::string &tagName,
+                                       const Node *node) const;
+
+  /// Get first element by predicate.
+  template <typename Predicate>
+  const Node *getFirstElementByPredicate(Predicate predicate,
+                                         const Node *node) const {
+    if (node->getNodeData().isElementData() && predicate(node)) {
+      return node;
+    } else {
+      for (auto &childrenNode : node->getChildren()) {
+        const Node *found =
+            getFirstElementByPredicate(predicate, &childrenNode);
+        if (found != nullptr) {
+          return found;
+        }
+      }
+    }
+    return nullptr;
+  }
+
+  /// Get elements by call `predicate(node)` using DFS
   template <class Predicate> Nodes getElementsByPredicate(Predicate predicate) {
     Nodes elementList;
     std::queue<Node> queue;
@@ -97,35 +125,6 @@ public:
       }
     }
     return elementList;
-  }
-
-  /// Search element list by tag name by bfs(breadth first search)
-  Nodes getElementsByTag(const std::string &tagName);
-
-  /// Get element list by element id.
-  Node getElementById(const std::string &id);
-
-private:
-  /// data common to all nodes;
-  std::vector<Node> children;
-
-  /// data specific to each node type;
-  NodeData nodeData;
-
-  static Node *findFirstElementByTagName(const std::string &tagName,
-                                         Node *node) {
-    if (node->getNodeData().isElementData() &&
-        node->getNodeData().element.getTagName() == tagName) {
-      return node;
-    } else {
-      for (auto &childrenNode : node->getChildren()) {
-        Node *found = findFirstElementByTagName(tagName, &childrenNode);
-        if (found != nullptr) {
-          return found;
-        }
-      }
-    }
-    return nullptr;
   }
 };
 

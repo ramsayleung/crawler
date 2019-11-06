@@ -61,7 +61,7 @@ class Parser {
   bool eof();
 
   /// Check if `currentTagName` is a self-closing tag or not.
-  bool isSelfClosingTag(const std::string& currentTagName);
+ const bool isSelfClosingTag(const std::string& currentTagName)const;
  private:
   size_t pos;
   std::string input;

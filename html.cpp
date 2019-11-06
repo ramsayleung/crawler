@@ -16,8 +16,8 @@ bool crawler::Parser::startsWith(const std::string &prefix) {
 
 bool crawler::Parser::eof() { return pos >= input.size(); }
 
-bool crawler::Parser::isSelfClosingTag(
-    const std::string &currentTagName) {
+const bool
+crawler::Parser::isSelfClosingTag(const std::string &currentTagName) const {
   return SELF_CLOSING_TAGS.find(currentTagName) != SELF_CLOSING_TAGS.end();
 }
 
@@ -39,8 +39,7 @@ std::string crawler::Parser::consumeWhile(Predicate predicate) {
 }
 
 void crawler::Parser::consumeWhitespace() {
-  crawler::Parser::consumeWhile(
-      [](char c) -> bool { return isspace(c); });
+  crawler::Parser::consumeWhile([](char c) -> bool { return isspace(c); });
 }
 
 // delete all comment tag
@@ -55,8 +54,7 @@ void crawler::Parser::consumeComment() {
 }
 
 crawler::Node crawler::Parser::parseText() {
-  return crawler::Node(
-      consumeWhile([](char c) -> bool { return c != '<'; }));
+  return crawler::Node(consumeWhile([](char c) -> bool { return c != '<'; }));
 }
 
 std::string crawler::Parser::parseAttributeValue() {
