@@ -9,25 +9,25 @@
 #include <string>
 #include "dom.hpp"
 
-namespace doubanCrawler {
+namespace crawler {
 
 class Parser {
  public:
   Parser(size_t pos, std::string input);
   /// Parse a sequence of sibling nodes.
-  std::vector<doubanCrawler::Node> parseNodes();
+  std::vector<crawler::Node> parseNodes();
 
   /// Parse a single node.
-  doubanCrawler::Node parseNode();
+  crawler::Node parseNode();
 
   /// Parse a single element, including its open tag, content, and closing tag.
-  doubanCrawler::Node parseElement();
+  crawler::Node parseElement();
 
   /// Parse a tag or attribute name.
   std::string parseTagName();
 
   /// Parse a list of name="values" pairs, separated by whitespace.
-  doubanCrawler::AttrMap parseAttributes();
+  crawler::AttrMap parseAttributes();
 
   /// Parse a single name="value" pair.
   std::pair<std::string, std::string> parseAttribute();
@@ -36,7 +36,7 @@ class Parser {
   std::string parseAttributeValue();
 
   /// Parse a text node
-  doubanCrawler::Node parseText();
+  crawler::Node parseText();
 
   /// Consume and discard zero or more whitespace characters
   void consumeWhitespace();
@@ -68,7 +68,7 @@ class Parser {
   inline static const std::set<std::string> SELF_CLOSING_TAGS = {"area", "base", "br", "col", "embed", "hr", "img", "input", "keygen", "link", "menuitem","meta", "param", "source", "track", "wbr"};
 };
 
-doubanCrawler::Node parse(const std::string &source);
+crawler::Node parse(const std::string &source);
 
 }
 

@@ -9,7 +9,7 @@
 #include <iterator>
 #include <sstream>
 
-namespace doubanCrawler {
+namespace crawler {
 /**
  * String split function, use `delim` to split str, and then store the result into `cont`
  * @tparam Container container to hold splited results.
@@ -44,5 +44,5 @@ inline bool startsWith(const std::string &prefix, const std::string &source,
 inline bool contains(const std::string &substring, const std::string &source) {
   return (source.find(substring) != std::string::npos);
 }
-}  // namespace doubanCrawler
+}  // namespace crawler
 #endif  // DOUBANCRAWLER_STRINGS_H

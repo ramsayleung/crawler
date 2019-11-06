@@ -5,7 +5,7 @@
 #ifndef DOUBANCRAWLER_TEST_H
 #define DOUBANCRAWLER_TEST_H
 
-#include <assert.h>
+#include <cassert>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -31,12 +31,12 @@ static int test_pass = 0;
         printf("%d/%d (%3.2f%%) passed\n", test_pass, test_count, test_pass * 100.0 / test_count); \
     } while (0)
 
-#define EXPECT_EQ_INT(expect, actual) EXPECT_EQ_BASE((expect) == (actual), expect, actual, "%d")
+#define ASSERT_INT_EQ(expect, actual) EXPECT_EQ_BASE((expect) == (actual), expect, actual, "%d")
 
-#define EXPECT_EQ_UNSIGNED_LONG(expect, actual) EXPECT_EQ_BASE((expect) == (actual), expect, actual, "%lu")
+#define ASSERT_UNSIGNED_LONG_EQ(expect, actual) EXPECT_EQ_BASE((expect) == (actual), expect, actual, "%lu")
 
-#define EXPECT_EQ_TRUE(actual) EXPECT_EQ_BASE(true == (actual), true, actual, "%d")
+#define ASSERT_TRUE(actual) EXPECT_EQ_BASE(true == (actual), true, actual, "%d")
 
-#define EXPECT_EQ_CSTRING(expect, actual) EXPECT_EQ_BASE(strcmp((expect),(actual))==0, expect, actual, "%s")
+#define ASSERT_CSTRING_EQ(expect, actual) EXPECT_EQ_BASE(strcmp((expect),(actual))==0, expect, actual, "%s")
 
 #endif  //DOUBANCRAWLER_TEST_H

@@ -11,10 +11,9 @@
 #include <regex>
 #include <string>
 
-void printNode(const doubanCrawler::Node &result) {
+void printNode(const crawler::Node &result) {
   TRACE(("tagName: %s\n", result.getNodeData().element.getTagName().c_str()));
-  doubanCrawler::AttrMap attributes =
-      result.getNodeData().element.getAttributes();
+  crawler::AttrMap attributes = result.getNodeData().element.getAttributes();
   for (auto const &keyValuePair : attributes) {
     TRACE(("key: %s value: %s\n", keyValuePair.first.c_str(),
            keyValuePair.second.c_str()));
@@ -22,50 +21,50 @@ void printNode(const doubanCrawler::Node &result) {
 }
 
 void testEqualMacro() {
-  EXPECT_EQ_TRUE(true);
-  EXPECT_EQ_CSTRING("div", "div");
+  ASSERT_TRUE(true);
+  ASSERT_CSTRING_EQ("div", "div");
 }
 
 void testSplit() {
   std::string classes = "item.pic.info";
   std::set<std::string> classSet;
-  doubanCrawler::split(classes, classSet, '.');
-  EXPECT_EQ_UNSIGNED_LONG(3lu, classSet.size());
+  crawler::split(classes, classSet, '.');
+  ASSERT_UNSIGNED_LONG_EQ(3lu, classSet.size());
 }
 
 void testStartsWith() {
   const std::string source = "tititoto";
   std::string prefix = "titi";
-  EXPECT_EQ_INT(1, doubanCrawler::startsWith(prefix, source));
+  ASSERT_INT_EQ(1, crawler::startsWith(prefix, source));
   prefix = "tito";
-  EXPECT_EQ_INT(true, doubanCrawler::startsWith(prefix, source, 2, 6));
+  ASSERT_INT_EQ(true, crawler::startsWith(prefix, source, 2, 6));
 }
 
 void testParseElement() {
   const std::string source = R"(<div id="main" class="test"></div>)";
-  doubanCrawler::Parser parser(0, source);
-  doubanCrawler::Node node = parser.parseElement();
+  crawler::Parser parser(0, source);
+  crawler::Node node = parser.parseElement();
   std::string tagName = node.getNodeData().element.getTagName();
-  EXPECT_EQ_CSTRING("div", tagName.c_str());
+  ASSERT_CSTRING_EQ("div", tagName.c_str());
 }
 
 void testParseNode() {
   const std::string source = R"(<p>hello world</p>)";
-  doubanCrawler::Parser parser(0, source);
-  doubanCrawler::Node node = parser.parseNode();
-  EXPECT_EQ_TRUE(node.getNodeData().isElementData());
-  EXPECT_EQ_TRUE(node.getChildren().size() == 1);
-  doubanCrawler::Node childrenNode = node.getChildren().at(0);
-  EXPECT_EQ_TRUE(childrenNode.getNodeData().isText());
-  EXPECT_EQ_CSTRING("hello world", childrenNode.getNodeData().text.c_str());
+  crawler::Parser parser(0, source);
+  crawler::Node node = parser.parseNode();
+  ASSERT_TRUE(node.getNodeData().isElementData());
+  ASSERT_TRUE(node.getChildren().size() == 1);
+  crawler::Node childrenNode = node.getChildren().at(0);
+  ASSERT_TRUE(childrenNode.getNodeData().isText());
+  ASSERT_CSTRING_EQ("hello world", childrenNode.getNodeData().text.c_str());
 }
 
 void testParseAttributes() {
   const std::string source = R"(<div id="main" class="test"></div>)";
-  doubanCrawler::Parser parser(0, source);
-  std::vector<doubanCrawler::Node> nodes = parser.parseNodes();
-  doubanCrawler::Node node = nodes.at(0);
-  EXPECT_EQ_TRUE(node.getNodeData().isElementData());
+  crawler::Parser parser(0, source);
+  std::vector<crawler::Node> nodes = parser.parseNodes();
+  crawler::Node node = nodes.at(0);
+  ASSERT_TRUE(node.getNodeData().isElementData());
 }
 
 void testParse() {
@@ -73,7 +72,7 @@ void testParse() {
   std::stringstream buffer;
   buffer << file.rdbuf();
   std::string source = buffer.str();
-  doubanCrawler::Node node = doubanCrawler::parse(source);
+  crawler::Node node = crawler::parse(source);
 }
 
 void testParseSelfClosingTag() {
@@ -81,14 +80,14 @@ void testParseSelfClosingTag() {
   std::stringstream buffer;
   buffer << file.rdbuf();
   std::string source = buffer.str();
-  doubanCrawler::Node node = doubanCrawler::parse(source);
-  doubanCrawler::Elements elements = node.getElementsByTag(std::string("img"));
+  crawler::Node node = crawler::parse(source);
+  crawler::Nodes elements = node.getElementsByTag(std::string("img"));
   auto const element = elements[0];
-  const doubanCrawler::AttrMap attributes =
+  const crawler::AttrMap attributes =
       element.getNodeData().element.getAttributes();
   auto iterator = attributes.find("width");
-  EXPECT_EQ_TRUE(iterator != attributes.end());
-  EXPECT_EQ_CSTRING("100", iterator->second.c_str());
+  ASSERT_TRUE(iterator != attributes.end());
+  ASSERT_CSTRING_EQ("100", iterator->second.c_str());
   for (auto const &result : elements) {
     printNode(result);
   }
@@ -97,7 +96,7 @@ void testParseSelfClosingTag() {
 void testStringContains() {
   std::string substring("needle");
   std::string source("There are two needles in this haystack.");
-  EXPECT_EQ_TRUE(doubanCrawler::contains(substring, source));
+  ASSERT_TRUE(crawler::contains(substring, source));
 }
 
 void testConsumeComment() {
@@ -108,13 +107,13 @@ void testConsumeComment() {
   std::regex pattern(R"(<!--.*?-->)");
   std::string result = std::regex_replace(buffer.str(), pattern, emptyString);
   std::string commentDescriptor("<!--");
-  EXPECT_EQ_TRUE(!doubanCrawler::contains(commentDescriptor, result));
+  ASSERT_TRUE(!crawler::contains(commentDescriptor, result));
 }
 
 void testHttp() {
   /* first where are we going to send it? */
   const std::string host = "stackoverflow.com";
-  doubanCrawler::http_get(host);
+  crawler::http_get(host);
 }
 
 void testGetElementsByTag() {
@@ -122,8 +121,8 @@ void testGetElementsByTag() {
   std::stringstream buffer;
   buffer << file.rdbuf();
   std::string source = buffer.str();
-  doubanCrawler::Node node = doubanCrawler::parse(source);
-  doubanCrawler::Elements elements = node.getElementsByTag(std::string("div"));
+  crawler::Node node = crawler::parse(source);
+  crawler::Nodes elements = node.getElementsByTag(std::string("div"));
   for (auto const &result : elements) {
     printNode(result);
   }
@@ -134,10 +133,10 @@ void testGetElementById() {
   std::stringstream buffer;
   buffer << file.rdbuf();
   std::string source = buffer.str();
-  doubanCrawler::Node node = doubanCrawler::parse(source);
-  doubanCrawler::Node result = node.getElementById("main");
+  crawler::Node node = crawler::parse(source);
+  crawler::Node result = node.getElementById("main");
   printNode(result);
-  EXPECT_EQ_CSTRING(
+  ASSERT_CSTRING_EQ(
       result.getNodeData().element.getAttributes().at("class").c_str(), "test");
 }
 

@@ -6,7 +6,7 @@
 #define DOUBANCRAWLER_HTTP_H
 
 #include <string>
-namespace doubanCrawler {
+namespace crawler {
 
 int tcp_connect(const char *host, const char *serv);
 
@@ -18,5 +18,5 @@ void error(const char *msg);
 
 std::string http_get(const std::string &host);
 
-}  // namespace doubanCrawler
+}  // namespace crawler
 #endif  //DOUBANCRAWLER_HTTP_H

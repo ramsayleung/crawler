@@ -7,7 +7,7 @@
 
 #include <iostream>
 
-namespace doubanCrawler {
+namespace crawler {
 // http header constants
 namespace header {
 const char *const CONNECTION = "Connection";
@@ -22,7 +22,7 @@ namespace constants {
 const char *const HTTP_SEPARATOR = "\r\n";
 const char *const HTTP_COLON = ": ";
 }  // namespace constants
-}  // namespace doubanCrawler
+}  // namespace crawler
 #define MAXLINE 4096
 
 #ifdef DEBUG

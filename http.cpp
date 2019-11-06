@@ -12,7 +12,7 @@
 #include <string>
 #include "utils.hpp"
 
-void doubanCrawler::error(const char *msg) {
+void crawler::error(const char *msg) {
     perror(msg);
     exit(0);
 }
@@ -23,7 +23,7 @@ void doubanCrawler::error(const char *msg) {
  * @param serv 服务
  * @return socketfd
  */
-int doubanCrawler::tcp_connect(const char *host, const char *serv) {
+int crawler::tcp_connect(const char *host, const char *serv) {
     int sockfd, n;
     struct addrinfo hints, *res, *ressave;
     bzero(&hints, sizeof(struct addrinfo));
@@ -52,7 +52,7 @@ int doubanCrawler::tcp_connect(const char *host, const char *serv) {
     return sockfd;
 }
 
-std::string doubanCrawler::handle_response(int sockfd) {
+std::string crawler::handle_response(int sockfd) {
     int n = 0;
     char recvline[MAXLINE + 1];
     /* process response */
@@ -65,7 +65,7 @@ std::string doubanCrawler::handle_response(int sockfd) {
     return std::string(buffer);
 }
 
-void doubanCrawler::send_request(int sockfd, const char *message) {
+void crawler::send_request(int sockfd, const char *message) {
     int total = 0, sent = 0, bytes = 0;
     /* send the request */
     total = strlen(message);
@@ -79,17 +79,18 @@ void doubanCrawler::send_request(int sockfd, const char *message) {
     } while (sent < total);
 }
 
-std::string doubanCrawler::http_get(const std::string &host) {
+std::string crawler::http_get(const std::string &host) {
     const std::string protocol = "http";
-    const std::string method = doubanCrawler::method::GET;
+    const std::string method = crawler::method::GET;
     const std::string path = "/";
     int sockfd;
     const char *httpRequestFormat = "%s %s HTTP/1.1\r\n";
     char buffer[1024];
 
     std::map<std::string, std::string> headers;
-    headers.insert(std::pair<std::string, std::string>(doubanCrawler::header::HOST, host));
-    headers.insert(std::pair<std::string, std::string>(doubanCrawler::header::CONNECTION, "close"));
+    headers.insert(std::pair<std::string, std::string>(crawler::header::HOST, host));
+    headers.insert(std::pair<std::string, std::string>(
+        crawler::header::CONNECTION, "close"));
     /* allocate space for the message */
     sprintf(buffer, httpRequestFormat, method.c_str(), path.c_str());
     std::string requestBody = buffer;
@@ -97,21 +98,21 @@ std::string doubanCrawler::http_get(const std::string &host) {
     /* fill in the parameters */
     /* If client sends request without `Connection: close` header, the server with the connection open, and read block*/
     for (auto const &element : headers) {
-        requestBody += element.first + doubanCrawler::constants::HTTP_COLON + element.second + doubanCrawler::constants::HTTP_SEPARATOR;
+        requestBody += element.first + crawler::constants::HTTP_COLON + element.second + crawler::constants::HTTP_SEPARATOR;
     }
-    requestBody += doubanCrawler::constants::HTTP_SEPARATOR;
+    requestBody += crawler::constants::HTTP_SEPARATOR;
 
     /* What are we going to send? */
     TRACE(("Request:%s\n", requestBody.c_str()));
 
     /* create the socket */
-    sockfd = doubanCrawler::tcp_connect(host.c_str(), protocol.c_str());
+    sockfd = crawler::tcp_connect(host.c_str(), protocol.c_str());
 
     /* send request*/
-    doubanCrawler::send_request(sockfd, requestBody.c_str());
+    crawler::send_request(sockfd, requestBody.c_str());
 
     /* receive the response */
-    std::string response = doubanCrawler::handle_response(sockfd);
+    std::string response = crawler::handle_response(sockfd);
 
     /* close the socket */
     close(sockfd);

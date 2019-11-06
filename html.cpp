@@ -8,29 +8,29 @@
 #include <regex>
 #include <utility>
 #include <vector>
-namespace doubanCrawler {
+namespace crawler {
 
-bool doubanCrawler::Parser::startsWith(const std::string &prefix) {
-  return doubanCrawler::startsWith(prefix, input, pos, input.size());
+bool crawler::Parser::startsWith(const std::string &prefix) {
+  return crawler::startsWith(prefix, input, pos, input.size());
 }
 
-bool doubanCrawler::Parser::eof() { return pos >= input.size(); }
+bool crawler::Parser::eof() { return pos >= input.size(); }
 
-bool doubanCrawler::Parser::isSelfClosingTag(
+bool crawler::Parser::isSelfClosingTag(
     const std::string &currentTagName) {
   return SELF_CLOSING_TAGS.find(currentTagName) != SELF_CLOSING_TAGS.end();
 }
 
-char doubanCrawler::Parser::nextChar() { return input.c_str()[pos]; }
+char crawler::Parser::nextChar() { return input.c_str()[pos]; }
 
-char doubanCrawler::Parser::consumeChar() {
+char crawler::Parser::consumeChar() {
   char currentChar = input.c_str()[pos];
   pos += 1;
   return currentChar;
 }
 
 template <class Predicate>
-std::string doubanCrawler::Parser::consumeWhile(Predicate predicate) {
+std::string crawler::Parser::consumeWhile(Predicate predicate) {
   std::string result;
   while (!eof() && predicate(nextChar())) {
     result += consumeChar();
@@ -38,15 +38,15 @@ std::string doubanCrawler::Parser::consumeWhile(Predicate predicate) {
   return result;
 }
 
-void doubanCrawler::Parser::consumeWhitespace() {
-  doubanCrawler::Parser::consumeWhile(
+void crawler::Parser::consumeWhitespace() {
+  crawler::Parser::consumeWhile(
       [](char c) -> bool { return isspace(c); });
 }
 
 // delete all comment tag
-void doubanCrawler::Parser::consumeComment() {
+void crawler::Parser::consumeComment() {
   std::string commentDescriptor("<!--");
-  if (!doubanCrawler::contains(commentDescriptor, input)) {
+  if (!crawler::contains(commentDescriptor, input)) {
     return;
   }
   std::string emptyString;
@@ -54,12 +54,12 @@ void doubanCrawler::Parser::consumeComment() {
   std::regex_replace(input, pattern, emptyString);
 }
 
-doubanCrawler::Node doubanCrawler::Parser::parseText() {
-  return doubanCrawler::Node(
+crawler::Node crawler::Parser::parseText() {
+  return crawler::Node(
       consumeWhile([](char c) -> bool { return c != '<'; }));
 }
 
-std::string doubanCrawler::Parser::parseAttributeValue() {
+std::string crawler::Parser::parseAttributeValue() {
   const char openQuote = consumeChar();
   assert(openQuote == '"' || openQuote == '\'');
   auto value =
@@ -68,17 +68,17 @@ std::string doubanCrawler::Parser::parseAttributeValue() {
   return value;
 }
 
-std::pair<std::string, std::string> doubanCrawler::Parser::parseAttribute() {
+std::pair<std::string, std::string> crawler::Parser::parseAttribute() {
   const std::string name = parseTagName();
   assert(consumeChar() == '=');
   const std::string value = parseAttributeValue();
   return std::make_pair(name, value);
 }
 
-std::string doubanCrawler::Parser::parseTagName() {
+std::string crawler::Parser::parseTagName() {
   return consumeWhile([](char c) -> bool { return isalnum(c); });
 }
-doubanCrawler::AttrMap doubanCrawler::Parser::parseAttributes() {
+crawler::AttrMap crawler::Parser::parseAttributes() {
   std::map<std::string, std::string> attributes;
   while (true) {
     consumeWhitespace();
@@ -90,7 +90,7 @@ doubanCrawler::AttrMap doubanCrawler::Parser::parseAttributes() {
   }
   return attributes;
 }
-doubanCrawler::Node doubanCrawler::Parser::parseElement() {
+crawler::Node crawler::Parser::parseElement() {
   // Opening tag.
   assert(consumeChar() == '<');
   const std::string tagName = parseTagName();
@@ -103,24 +103,24 @@ doubanCrawler::Node doubanCrawler::Parser::parseElement() {
       assert(consumeChar() == '/');
       assert(consumeChar() == '>');
     }
-    const std::vector<doubanCrawler::Node> emptyChild;
-    return doubanCrawler::Node(tagName, attributes, emptyChild);
+    const std::vector<crawler::Node> emptyChild;
+    return crawler::Node(tagName, attributes, emptyChild);
   } else {
     assert(consumeChar() == '>');
   }
 
   // Contents.
-  const std::vector<doubanCrawler::Node> children = parseNodes();
+  const std::vector<crawler::Node> children = parseNodes();
   // Closing tag.
   assert(consumeChar() == '<');
   assert(consumeChar() == '/');
   assert(parseTagName() == tagName);
   assert(consumeChar() == '>');
-  return doubanCrawler::Node(tagName, attributes, children);
+  return crawler::Node(tagName, attributes, children);
 }
-std::vector<doubanCrawler::Node> doubanCrawler::Parser::parseNodes() {
+std::vector<crawler::Node> crawler::Parser::parseNodes() {
   consumeComment();
-  std::vector<doubanCrawler::Node> nodes;
+  std::vector<crawler::Node> nodes;
   while (true) {
     consumeWhitespace();
     if (eof() || startsWith("</")) {
@@ -130,7 +130,7 @@ std::vector<doubanCrawler::Node> doubanCrawler::Parser::parseNodes() {
   }
   return nodes;
 }
-doubanCrawler::Node doubanCrawler::Parser::parseNode() {
+crawler::Node crawler::Parser::parseNode() {
   if (nextChar() == '<') {
     return parseElement();
   } else {
@@ -138,14 +138,14 @@ doubanCrawler::Node doubanCrawler::Parser::parseNode() {
   }
 }
 
-doubanCrawler::Parser::Parser(size_t _pos, std::string _input) {
+crawler::Parser::Parser(size_t _pos, std::string _input) {
   pos = _pos;
   input = std::move(_input);
 }
 
-doubanCrawler::Node parse(const std::string &source) {
-  const std::vector<doubanCrawler::Node> nodes =
-      doubanCrawler::Parser(0, source).parseNodes();
+crawler::Node parse(const std::string &source) {
+  const std::vector<crawler::Node> nodes =
+      crawler::Parser(0, source).parseNodes();
 
   // If the document contains a root element, just return it, Otherwise, create
   // one.
@@ -153,8 +153,8 @@ doubanCrawler::Node parse(const std::string &source) {
     return nodes.at(0);
   } else {
     const std::string html("html");
-    const doubanCrawler::AttrMap attributes;
-    return doubanCrawler::Node(html, attributes, nodes);
+    const crawler::AttrMap attributes;
+    return crawler::Node(html, attributes, nodes);
   }
 }
-} // namespace doubanCrawler
+} // namespace crawler

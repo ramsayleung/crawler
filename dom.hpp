@@ -2,6 +2,7 @@
 #ifndef DOUBANCRAWLER_DOM_H
 #define DOUBANCRAWLER_DOM_H
 
+#include "strings.hpp"
 #include <cassert>
 #include <map>
 #include <queue>
@@ -9,15 +10,14 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include "strings.hpp"
-namespace doubanCrawler {
+namespace crawler {
 class Node;
 using AttrMap = std::map<std::string, std::string>;
 
-using Elements = std::vector<Node>;
+using Nodes = std::vector<Node>;
 
 class ElementData {
- public:
+public:
   ElementData() = default;
   ElementData(std::string tagName, AttrMap attributes)
       : tagName(std::move(tagName)), attributes(std::move(attributes)) {}
@@ -34,20 +34,20 @@ class ElementData {
     std::set<std::string> classElement;
     if (clazz != attributes.end()) {
       std::string result = clazz->second;
-      doubanCrawler::split(result, classElement, '.');
+      crawler::split(result, classElement, '.');
     }
     return classElement;
   }
   [[nodiscard]] const std::string &getTagName() const { return tagName; }
   [[nodiscard]] const AttrMap &getAttributes() const { return attributes; }
 
- private:
+private:
   std::string tagName;
   AttrMap attributes;
 };
 
 typedef struct NodeType {
- public:
+public:
   bool isText() { return !text.empty(); }
   bool isElementData() { return !isText(); }
   ElementData element;
@@ -55,7 +55,7 @@ typedef struct NodeType {
 } NodeData;
 
 class Node {
- public:
+public:
   // data common to all nodes;
   explicit Node(const std::string &str) {
     nodeData.text = str;
@@ -78,9 +78,9 @@ class Node {
 
   [[nodiscard]] NodeData getNodeData() const { return nodeData; }
 
-  template <class Predicate>
-  Elements getElementsByPredicate(Predicate predicate) {
-    Elements elementList;
+  /// Get elements by call `predicate(node)`
+  template <class Predicate> Nodes getElementsByPredicate(Predicate predicate) {
+    Nodes elementList;
     std::queue<Node> queue;
     Node root = *this;
     queue.push(root);
@@ -99,27 +99,17 @@ class Node {
     return elementList;
   }
 
-  // Search element list by tag name by bfs(breadth first search)
-  Elements getElementsByTag(const std::string &tagName) {
-    return getElementsByPredicate([&tagName](const Node& node) -> bool {
-      return node.getNodeData().element.getTagName() == tagName;
-    });
-  }
+  /// Search element list by tag name by bfs(breadth first search)
+  Nodes getElementsByTag(const std::string &tagName);
 
-  // Get element list by element id.
-  Node getElementById(const std::string &id) {
-    Elements elements = getElementsByPredicate([&id](const Node& node) -> bool {
-      return node.getNodeData().element.id() == id;
-    });
-    assert(elements.size() == 1);
-    return elements[0];
-  }
+  /// Get element list by element id.
+  Node getElementById(const std::string &id);
 
- private:
-  // data common to all nodes;
+private:
+  /// data common to all nodes;
   std::vector<Node> children;
 
-  // data specific to each node type;
+  /// data specific to each node type;
   NodeData nodeData;
 
   static Node *findFirstElementByTagName(const std::string &tagName,
@@ -139,6 +129,6 @@ class Node {
   }
 };
 
-}  // namespace doubanCrawler
+} // namespace crawler
 
-#endif  // DOUBANCRAWLER_DOM_H
+#endif // DOUBANCRAWLER_DOM_H
