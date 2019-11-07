@@ -18,6 +18,9 @@ using AttrMap = std::map<std::string, std::string>;
 
 using Nodes = std::vector<Node>;
 
+/// escape char for chomp balanced.
+inline const static char ESC = '\\';
+
 class ElementData {
 public:
   ElementData() = default;
@@ -171,6 +174,17 @@ public:
   /// selects).
   std::string consumeElementSelector();
 
+  /// Pulls a balanced string off the queue. E.g. if queue is "(one (two) three)
+  /// four", (,) will return "one (two) three", and leave " four" on the queue.
+  /// Unbalanced openers and closers can be quoted (with ' or ") or escaped
+  /// (with \). Those escapes will be left in the returned string, which is
+  /// suitable for regexes (where we need to preserve the escape), but
+  /// unsuitable for contains text strings; use unescape for that.
+  std::string chompBalanced(char open, char close);
+
+  /// Consume one character off queue, eg move pos advanced one step.
+  char consume();
+
   /// Consume by predate
   template <typename Predicate>
   std::string consumeByPredicate(Predicate predicate);
@@ -184,10 +198,16 @@ private:
   size_t pos;
 };
 
+/// Evaluator that an element need to match the selector
+/// Such as, Id Evaluator means the selector will compare the id of an element
+/// with the given id.
 class Evaluator {
 public:
+  /// Derived class need to implement this function to show how to match.
   virtual bool matches(const Node &root, const Node &node) = 0;
 };
+
+/// Combining Evaluator.
 class CombiningEvaluator : public Evaluator {
 public:
   explicit CombiningEvaluator(std::vector<Evaluator *> evalutors);
@@ -211,6 +231,8 @@ public:
   bool matches(const crawler::Node &root, const crawler::Node &node) override;
 };
 
+/// Id Evaluator, means that selector will compare the id of an element with the
+/// given one.
 class Id : public Evaluator {
 public:
   explicit Id(std::string id);
@@ -219,6 +241,9 @@ public:
 private:
   std::string id;
 };
+
+/// Class Evaluator, means that selector will compare the class name of an
+/// element with the given one.
 class Class : public Evaluator {
 public:
   explicit Class(std::string clazz);
@@ -228,6 +253,8 @@ private:
   std::string clazz;
 };
 
+/// Tag Evaluator, means that selector will compare the tag name of an element
+/// with the given one.
 class Tag : public Evaluator {
 public:
   explicit Tag(std::string tagName);

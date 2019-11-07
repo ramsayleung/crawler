@@ -5,6 +5,7 @@
 #include "dom.hpp"
 
 #include <utility>
+
 crawler::Nodes crawler::Node::getElementsByTag(const std::string &tagName) {
   return getElementsByPredicate([&tagName](const Node &node) -> bool {
     return node.getNodeData().element.getTagName() == tagName;
@@ -135,6 +136,51 @@ bool crawler::TokenQueue::matchesAny(std::array<std::string, N> seq) {
   }
   return false;
 }
+std::string crawler::TokenQueue::chompBalanced(char open, char close) {
+  int start = -1;
+  int end = -1;
+  int depth = 0;
+  char last = 0;
+  bool isSingleQuote = false;
+  bool isDoubleQuote = false;
+  do {
+    if (eof()) {
+      break;
+    }
+    char c = consume();
+    if (last == 0 || last != ESC) {
+      if (c == '\'' && c != open && !isDoubleQuote) {
+        isSingleQuote = !isSingleQuote;
+      } else if (c == '\"' && c != open && !isSingleQuote) {
+        isDoubleQuote = !isDoubleQuote;
+      }
+      if (isSingleQuote || isDoubleQuote) {
+        continue;
+      }
+      if (c == open) {
+        depth++;
+        if (start == -1) {
+          start = pos;
+        }
+      } else if (c == close) {
+        depth--;
+      }
+    }
+    if (depth > 0 && last != 0) {
+      // don't include the outer match pair in the return
+      end = pos;
+    }
+    last = c;
+  } while (depth > 0);
+  const std::string result = (end >= 0) ? data.substr(start, end) : "";
+  if (depth > 0) {
+    // throw exception?
+  }
+  return result;
+}
+
+char crawler::TokenQueue::consume() { return data.c_str()[pos++]; }
+
 std::shared_ptr<crawler::Evaluator *> crawler::QueryParser::parse() {
   // not support combinator for now.
   tokenQueue.consumeWhiteSpace();

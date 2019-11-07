@@ -203,7 +203,16 @@ void testSelect() {
   ASSERT_CSTRING_EQ(main.getNodeData().element.clazz().c_str(), "test");
 }
 
+void testChompBalanced() {
+  crawler::TokenQueue tokenQueue("a[href]");
+  ASSERT_CSTRING_EQ(tokenQueue.chompBalanced('[', ']').c_str(), "href");
+
+  crawler::TokenQueue queue("(one (two) three) four");
+  TRACE(("queue chompBalanced: %s\n", queue.chompBalanced('(', ')').c_str()));
+}
+
 int main() {
+  testChompBalanced();
   testSelect();
   testParserParse();
   testConsumeCssIdentifier();
