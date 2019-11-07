@@ -5,7 +5,6 @@
 #include "dom.hpp"
 #include "html.hpp"
 #include "http.hpp"
-#include "selector.hpp"
 #include "utils.hpp"
 
 #include <fstream>
@@ -169,7 +168,44 @@ void testConsumeCssIdentifier() {
   ASSERT_CSTRING_EQ("a", tokenQueue.consumeCssIdentifier().c_str());
 }
 
+void testParserParse() {
+  crawler::QueryParser tagParser("div");
+  std::shared_ptr<crawler::Evaluator *> pEval = tagParser.parse();
+  // just acts like Java `instanceof` keyword.
+  auto *tag = dynamic_cast<crawler::Tag *>(*pEval);
+  ASSERT_TRUE(tag != nullptr);
+
+  crawler::QueryParser idParser("#id");
+  pEval = idParser.parse();
+  auto *idEval = dynamic_cast<crawler::Id *>(*pEval);
+  ASSERT_TRUE(idEval != nullptr);
+
+  crawler::QueryParser classParser(".class");
+  pEval = classParser.parse();
+  auto *classEval = dynamic_cast<crawler::Class *>(*pEval);
+  ASSERT_TRUE(classEval != nullptr);
+}
+
+void testSelect() {
+  std::ifstream file("source/parseTest.html");
+  std::stringstream buffer;
+  buffer << file.rdbuf();
+  std::string source = buffer.str();
+  crawler::Node node = crawler::parse(source);
+  crawler::Nodes nodes = node.select("div");
+  for (auto const &result : nodes) {
+    ASSERT_CSTRING_EQ(result.getNodeData().element.getTagName().c_str(), "div");
+  }
+  nodes = node.select("#main");
+  ASSERT_TRUE(nodes.size() == 1);
+  crawler::Node main = nodes.front();
+  ASSERT_CSTRING_EQ(main.getNodeData().element.getTagName().c_str(), "div");
+  ASSERT_CSTRING_EQ(main.getNodeData().element.clazz().c_str(), "test");
+}
+
 int main() {
+  testSelect();
+  testParserParse();
   testConsumeCssIdentifier();
   testMatchesAny();
   testMatchesWords();
