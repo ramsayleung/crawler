@@ -132,3 +132,30 @@ bool crawler::Tag::matches(const crawler::Node &root,
                            const crawler::Node &node) {
   return tagName == node.getNodeData().element.getTagName();
 }
+crawler::CombiningEvaluator::CombiningEvaluator(
+    std::vector<Evaluator *> evalutors)
+    : evalutors(std::move(evalutors)) {}
+
+bool crawler::And::matches(const crawler::Node &root,
+                           const crawler::Node &node) {
+  for (auto const &eval : this->evalutors) {
+    if (!eval->matches(root, node)) {
+      return false;
+    }
+  }
+  return true;
+}
+crawler::And::And(const std::vector<Evaluator *> &evalutors)
+    : CombiningEvaluator(evalutors) {}
+
+bool crawler::Or::matches(const crawler::Node &root,
+                          const crawler::Node &node) {
+  for (auto const &eval : this->evalutors) {
+    if (eval->matches(root, node)) {
+      return true;
+    }
+  }
+  return false;
+}
+crawler::Or::Or(const std::vector<Evaluator *> &evalutors)
+    : CombiningEvaluator(evalutors) {}

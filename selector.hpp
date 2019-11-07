@@ -67,6 +67,29 @@ public:
   virtual bool matches(const crawler::Node &root,
                        const crawler::Node &node) = 0;
 };
+class CombiningEvaluator {
+public:
+  explicit CombiningEvaluator(std::vector<Evaluator *> evalutors);
+  virtual bool matches(const crawler::Node &root, const crawler::Node &node) {
+    return false;
+  }
+
+protected:
+  std::vector<Evaluator *> evalutors;
+};
+
+class And final : public CombiningEvaluator {
+public:
+  explicit And(const std::vector<Evaluator *> &evalutors);
+  bool matches(const crawler::Node &root, const crawler::Node &node) override;
+};
+
+class Or final : public CombiningEvaluator {
+public:
+  explicit Or(const std::vector<Evaluator *> &evalutors);
+  bool matches(const crawler::Node &root, const crawler::Node &node) override;
+};
+
 class Id : public Evaluator {
 public:
   explicit Id(std::string id);
