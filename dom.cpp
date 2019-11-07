@@ -148,7 +148,7 @@ std::string crawler::TokenQueue::chompBalanced(char open, char close) {
       break;
     }
     char c = consume();
-    if (last == 0 || last != ESC) {
+    if (last != ESC) {
       if (c == '\'' && c != open && !isDoubleQuote) {
         isSingleQuote = !isSingleQuote;
       } else if (c == '\"' && c != open && !isSingleQuote) {
@@ -172,7 +172,8 @@ std::string crawler::TokenQueue::chompBalanced(char open, char close) {
     }
     last = c;
   } while (depth > 0);
-  const std::string result = (end >= 0) ? data.substr(start, end) : "";
+  const int length = end - start;
+  const std::string result = (end >= 0) ? data.substr(start, length) : "";
   if (depth > 0) {
     // throw exception?
   }

@@ -204,11 +204,12 @@ void testSelect() {
 }
 
 void testChompBalanced() {
-  crawler::TokenQueue tokenQueue("a[href]");
-  ASSERT_CSTRING_EQ(tokenQueue.chompBalanced('[', ']').c_str(), "href");
+  crawler::TokenQueue tokenQueue("[href]");
+  const char *href = tokenQueue.chompBalanced('[', ']').c_str();
+  ASSERT_CSTRING_EQ(href, "href");
 
   crawler::TokenQueue queue("(one (two) three) four");
-  TRACE(("queue chompBalanced: %s\n", queue.chompBalanced('(', ')').c_str()));
+  ASSERT_CSTRING_EQ("one (two) three", queue.chompBalanced('(', ')').c_str());
 }
 
 int main() {
