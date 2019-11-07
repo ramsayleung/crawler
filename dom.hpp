@@ -11,6 +11,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <memory>
 namespace crawler {
 class Evaluator;
 class Node;
