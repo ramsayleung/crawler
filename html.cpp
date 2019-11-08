@@ -114,7 +114,8 @@ crawler::Node crawler::Parser::parseElement() {
   assert(consumeChar() == '/');
   assert(parseTagName() == tagName);
   assert(consumeChar() == '>');
-  return crawler::Node(tagName, attributes, children);
+  crawler::Node node(tagName, attributes, children);
+  return node;
 }
 std::vector<crawler::Node> crawler::Parser::parseNodes() {
   consumeComment();
