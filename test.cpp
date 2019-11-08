@@ -231,8 +231,8 @@ int main() {
   testParseNode();
   testParseAttributes();
   testParse();
-  testHttp();
   testConsumeComment();
   testParseSelfClosingTag();
+  // testHttp();
   PRINT_TEST_RESULT();
 }

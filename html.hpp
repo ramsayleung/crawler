@@ -5,14 +5,14 @@
 #ifndef DOUBANCRAWLER_HTML_H
 #define DOUBANCRAWLER_HTML_H
 
+#include "dom.hpp"
 #include <set>
 #include <string>
-#include "dom.hpp"
 
 namespace crawler {
 
 class Parser {
- public:
+public:
   Parser(size_t pos, std::string input);
   /// Parse a sequence of sibling nodes.
   std::vector<crawler::Node> parseNodes();
@@ -41,12 +41,11 @@ class Parser {
   /// Consume and discard zero or more whitespace characters
   void consumeWhitespace();
 
-  /// Consume and discard zero or more comment 
+  /// Consume and discard zero or more comment
   void consumeComment();
 
   /// Consume character until `test` return false.
-  template<class Predicate>
-  std::string consumeWhile(Predicate predicate);
+  template <class Predicate> std::string consumeWhile(Predicate predicate);
 
   /// Return the current character and advance `pos` to the next character
   char consumeChar();
@@ -61,15 +60,18 @@ class Parser {
   bool eof();
 
   /// Check if `currentTagName` is a self-closing tag or not.
- const bool isSelfClosingTag(const std::string& currentTagName)const;
- private:
+  bool isSelfClosingTag(const std::string &currentTagName) const;
+
+private:
   size_t pos;
   std::string input;
-  inline static const std::set<std::string> SELF_CLOSING_TAGS = {"area", "base", "br", "col", "embed", "hr", "img", "input", "keygen", "link", "menuitem","meta", "param", "source", "track", "wbr"};
+  inline static const std::set<std::string> SELF_CLOSING_TAGS = {
+      "area",   "base", "br",       "col",  "embed", "hr",     "img",   "input",
+      "keygen", "link", "menuitem", "meta", "param", "source", "track", "wbr"};
 };
 
 crawler::Node parse(const std::string &source);
 
-}
+} // namespace crawler
 
 #endif // DOUBANCRAWLER_HTML_H

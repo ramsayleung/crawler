@@ -16,8 +16,8 @@ bool crawler::Parser::startsWith(const std::string &prefix) {
 
 bool crawler::Parser::eof() { return pos >= input.size(); }
 
-const bool
-crawler::Parser::isSelfClosingTag(const std::string &currentTagName) const {
+bool crawler::Parser::isSelfClosingTag(
+    const std::string &currentTagName) const {
   return SELF_CLOSING_TAGS.find(currentTagName) != SELF_CLOSING_TAGS.end();
 }
 

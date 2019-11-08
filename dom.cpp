@@ -4,6 +4,7 @@
 
 #include "dom.hpp"
 
+#include <algorithm>
 #include <utility>
 
 crawler::Nodes crawler::Node::getElementsByTag(const std::string &tagName) {
@@ -121,12 +122,8 @@ bool crawler::TokenQueue::matchesAny(std::array<char, N> seq) {
   if (eof()) {
     return false;
   }
-  for (auto c : seq) {
-    if (data.c_str()[pos] == c) {
-      return true;
-    }
-  }
-  return false;
+  return std::any_of(seq.cbegin(), seq.cend(),
+                     [this](const char c) { return data.c_str()[pos] == c; });
 }
 template <size_t N>
 bool crawler::TokenQueue::matchesAny(std::array<std::string, N> seq) {
@@ -244,24 +241,18 @@ crawler::CombiningEvaluator::CombiningEvaluator(
 
 bool crawler::And::matches(const crawler::Node &root,
                            const crawler::Node &node) {
-  for (auto const &eval : this->evalutors) {
-    if (!eval->matches(root, node)) {
-      return false;
-    }
-  }
-  return true;
+  return std::all_of(
+      this->evalutors.cbegin(), this->evalutors.cend(),
+      [&](auto const &eval) { return eval->matches(root, node); });
 }
 crawler::And::And(const std::vector<Evaluator *> &evalutors)
     : CombiningEvaluator(evalutors) {}
 
 bool crawler::Or::matches(const crawler::Node &root,
                           const crawler::Node &node) {
-  for (auto const &eval : this->evalutors) {
-    if (eval->matches(root, node)) {
-      return true;
-    }
-  }
-  return false;
+  return std::any_of(
+      this->evalutors.cbegin(), this->evalutors.cend(),
+      [&](auto const &eval) { return eval->matches(root, node); });
 }
 crawler::Or::Or(const std::vector<Evaluator *> &evalutors)
     : CombiningEvaluator(evalutors) {}
