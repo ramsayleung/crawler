@@ -8,25 +8,16 @@
 
 crawler::Nodes crawler::Node::getElementsByTag(const std::string &tagName) {
   return getElementsByPredicate([&tagName](const Node &node) -> bool {
-    return node.getNodeData().element.getTagName() == tagName;
+    return node.getElementData().getTagName() == tagName;
   });
 }
 
 crawler::Node crawler::Node::getElementById(const std::string &id) {
   Nodes elements = getElementsByPredicate([&id](const Node &node) -> bool {
-    return node.getNodeData().element.id() == id;
+    return node.getElementData().id() == id;
   });
   assert(elements.size() == 1);
   return elements[0];
-}
-const crawler::Node *
-crawler::Node::getFirstElementByTagName(const std::string &tagName,
-                                        const crawler::Node *node) const {
-  return getFirstElementByPredicate(
-      [&tagName](const Node *input) -> bool {
-        return input->getNodeData().element.getTagName() == tagName;
-      },
-      node);
 }
 crawler::Nodes crawler::Node::select(Evaluator *evaluator) {
   return getElementsByPredicate([&evaluator, this](const Node &node) -> bool {
@@ -38,7 +29,18 @@ crawler::Nodes crawler::Node::select(const std::string &cssQuery) {
   crawler::QueryParser cssParser(cssQuery);
   return select(*cssParser.parse());
 }
-std::string crawler::ElementData::clazz() {
+bool crawler::Node::isElement() const { return nodeType == NodeType ::Element; }
+
+bool crawler::Node::isText() const { return nodeType == NodeType ::Text; }
+
+const crawler::ElementData &crawler::Node::getElementData() const {
+  return std::get<ElementData>(nodeData);
+}
+const std::string &crawler::Node::getText() const {
+  return std::get<std::string>(nodeData);
+}
+
+std::string crawler::ElementData::clazz() const {
   auto clazz = attributes.find("class");
   std::string classValue;
   if (clazz != attributes.end()) {
@@ -46,7 +48,7 @@ std::string crawler::ElementData::clazz() {
   }
   return classValue;
 }
-std::string crawler::ElementData::id() {
+std::string crawler::ElementData::id() const {
   auto result = attributes.find("id");
   if (result != attributes.end()) {
     return result->second;
@@ -55,7 +57,6 @@ std::string crawler::ElementData::id() {
   }
 }
 
-#include <utility>
 crawler::TokenQueue::TokenQueue(std::string data, size_t pos)
     : data(std::move(data)), pos(pos) {}
 
@@ -225,17 +226,17 @@ crawler::QueryParser::QueryParser(const std::string &queryString)
 crawler::Id::Id(std::string id) : id(std::move(id)) {}
 bool crawler::Id::matches(const crawler::Node &root,
                           const crawler::Node &node) {
-  return id == node.getNodeData().element.id();
+  return id == node.getElementData().id();
 }
 crawler::Class::Class(std::string clazz) : clazz(std::move(clazz)) {}
 bool crawler::Class::matches(const crawler::Node &root,
                              const crawler::Node &node) {
-  return clazz == node.getNodeData().element.clazz();
+  return clazz == node.getElementData().clazz();
 }
 crawler::Tag::Tag(std::string tagName) : tagName(std::move(tagName)) {}
 bool crawler::Tag::matches(const crawler::Node &root,
                            const crawler::Node &node) {
-  return tagName == node.getNodeData().element.getTagName();
+  return tagName == node.getElementData().getTagName();
 }
 crawler::CombiningEvaluator::CombiningEvaluator(
     std::vector<Evaluator *> evalutors)

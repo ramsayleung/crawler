@@ -12,8 +12,8 @@
 #include <string>
 
 void printNode(const crawler::Node &result) {
-  TRACE(("tagName: %s\n", result.getNodeData().element.getTagName().c_str()));
-  crawler::AttrMap attributes = result.getNodeData().element.getAttributes();
+  TRACE(("tagName: %s\n", result.getElementData().getTagName().c_str()));
+  crawler::AttrMap attributes = result.getElementData().getAttributes();
   for (auto const &keyValuePair : attributes) {
     TRACE(("key: %s value: %s\n", keyValuePair.first.c_str(),
            keyValuePair.second.c_str()));
@@ -44,7 +44,7 @@ void testParseElement() {
   const std::string source = R"(<div id="main" class="test"></div>)";
   crawler::Parser parser(0, source);
   crawler::Node node = parser.parseElement();
-  std::string tagName = node.getNodeData().element.getTagName();
+  std::string tagName = node.getElementData().getTagName();
   ASSERT_CSTRING_EQ("div", tagName.c_str());
 }
 
@@ -52,11 +52,11 @@ void testParseNode() {
   const std::string source = R"(<p>hello world</p>)";
   crawler::Parser parser(0, source);
   crawler::Node node = parser.parseNode();
-  ASSERT_TRUE(node.getNodeData().isElementData());
+  ASSERT_TRUE(node.isElement());
   ASSERT_TRUE(node.getChildren().size() == 1);
   crawler::Node childrenNode = node.getChildren().at(0);
-  ASSERT_TRUE(childrenNode.getNodeData().isText());
-  ASSERT_CSTRING_EQ("hello world", childrenNode.getNodeData().text.c_str());
+  ASSERT_TRUE(childrenNode.isText());
+  ASSERT_CSTRING_EQ("hello world", childrenNode.getText().c_str());
 }
 
 void testParseAttributes() {
@@ -64,7 +64,7 @@ void testParseAttributes() {
   crawler::Parser parser(0, source);
   std::vector<crawler::Node> nodes = parser.parseNodes();
   crawler::Node node = nodes.at(0);
-  ASSERT_TRUE(node.getNodeData().isElementData());
+  ASSERT_TRUE(node.isElement());
 }
 
 void testParse() {
@@ -83,8 +83,7 @@ void testParseSelfClosingTag() {
   crawler::Node node = crawler::parse(source);
   crawler::Nodes elements = node.getElementsByTag(std::string("img"));
   auto const element = elements[0];
-  const crawler::AttrMap attributes =
-      element.getNodeData().element.getAttributes();
+  const crawler::AttrMap attributes = element.getElementData().getAttributes();
   auto iterator = attributes.find("width");
   ASSERT_TRUE(iterator != attributes.end());
   ASSERT_CSTRING_EQ("100", iterator->second.c_str());
@@ -133,8 +132,8 @@ void testGetElementById() {
   crawler::Node node = crawler::parse(source);
   crawler::Node result = node.getElementById("main");
   printNode(result);
-  ASSERT_CSTRING_EQ(
-      result.getNodeData().element.getAttributes().at("class").c_str(), "test");
+  ASSERT_CSTRING_EQ(result.getElementData().getAttributes().at("class").c_str(),
+                    "test");
 }
 
 void testMatchesWhitespace() {
@@ -194,13 +193,13 @@ void testSelect() {
   crawler::Node node = crawler::parse(source);
   crawler::Nodes nodes = node.select("div");
   for (auto const &result : nodes) {
-    ASSERT_CSTRING_EQ(result.getNodeData().element.getTagName().c_str(), "div");
+    ASSERT_CSTRING_EQ(result.getElementData().getTagName().c_str(), "div");
   }
   nodes = node.select("#main");
   ASSERT_TRUE(nodes.size() == 1);
   crawler::Node main = nodes.front();
-  ASSERT_CSTRING_EQ(main.getNodeData().element.getTagName().c_str(), "div");
-  ASSERT_CSTRING_EQ(main.getNodeData().element.clazz().c_str(), "test");
+  ASSERT_CSTRING_EQ(main.getElementData().getTagName().c_str(), "div");
+  ASSERT_CSTRING_EQ(main.getElementData().clazz().c_str(), "test");
 }
 
 void testChompBalanced() {
