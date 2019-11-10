@@ -173,6 +173,8 @@ public:
   /// selects).
   std::string consumeElementSelector();
 
+  std::string consumeSubQuery();
+
   /// Pulls a balanced string off the queue. E.g. if queue is "(one (two) three)
   /// four", (,) will return "one (two) three", and leave " four" on the queue.
   /// Unbalanced openers and closers can be quoted (with ' or ") or escaped
@@ -216,6 +218,31 @@ public:
 
 protected:
   std::vector<Evaluator *> evalutors;
+};
+
+/// Structural Evaluator
+class StructuralEvaluator : public Evaluator {
+public:
+  explicit StructuralEvaluator(std::shared_ptr<Evaluator *> _eval)
+      : evaluator(_eval) {}
+  virtual bool matches(const crawler::Node &root, const crawler::Node &node) {
+    return false;
+  }
+
+protected:
+  std::shared_ptr<Evaluator *> evaluator;
+};
+
+class Parent : public StructuralEvaluator {
+public:
+  explicit Parent(std::shared_ptr<Evaluator *> _evaluator);
+  bool matches(const crawler::Node &root, const crawler::Node &node) override;
+};
+
+class ImmediateParent : public StructuralEvaluator {
+public:
+  explicit ImmediateParent(std::shared_ptr<Evaluator *> _evaluator);
+  bool matches(const crawler::Node &root, const crawler::Node &node) override;
 };
 
 class And final : public CombiningEvaluator {
@@ -269,6 +296,10 @@ public:
 
   std::shared_ptr<Evaluator *> parse();
 
+  static std::shared_ptr<Evaluator *> parse(const std::string &cssQuery);
+
+  inline static const std::array<std::string, 5> COMBINATORS = {",", ">", "+",
+                                                                "~", " "};
 private:
   /// find elements.
   void findElements();
@@ -281,8 +312,15 @@ private:
 
   /// Find element by tag name.
   void findByTag();
+
+  void combinator(char combinator);
+
+  /// member variables.
+
   std::string queryString;
+
   TokenQueue tokenQueue;
+
   std::vector<Evaluator *> evals;
 };
 

@@ -201,9 +201,21 @@ void testSelect() {
   }
   nodes = node.select("#main");
   ASSERT_TRUE(nodes.size() == 1);
-  crawler::Node main = nodes.front();
-  ASSERT_CSTRING_EQ(main.getElementData().getTagName().c_str(), "div");
-  ASSERT_CSTRING_EQ(main.getElementData().clazz().c_str(), "test");
+  crawler::Node mainNode = nodes.front();
+  ASSERT_CSTRING_EQ(mainNode.getElementData().getTagName().c_str(), "div");
+  ASSERT_CSTRING_EQ(mainNode.getElementData().clazz().c_str(), "test");
+}
+
+void testCombinatorSelect() {
+  std::ifstream file("source/parseTest.html");
+  std::stringstream buffer;
+  buffer << file.rdbuf();
+  std::string source = buffer.str();
+  crawler::Node node = crawler::parse(source);
+  crawler::Nodes nodes = node.select("div#main > div");
+  ASSERT_TRUE(nodes.size() == 1);
+  crawler::Node divNode = nodes.front();
+  ASSERT_CSTRING_EQ(divNode.getElementData().id().c_str(), "parent");
 }
 
 void testChompBalanced() {
@@ -213,6 +225,12 @@ void testChompBalanced() {
 
   crawler::TokenQueue queue("(one (two) three) four");
   ASSERT_CSTRING_EQ("one (two) three", queue.chompBalanced('(', ')').c_str());
+}
+
+void testConsumeSubQuery() {
+  crawler::TokenQueue tokenQueue("ol, ol > li + li");
+  const std::string subQuery = tokenQueue.consumeSubQuery();
+  ASSERT_TRUE(subQuery == "ol");
 }
 
 void testParseParentNode() {
@@ -229,6 +247,7 @@ void testParseParentNode() {
 }
 
 int main() {
+  testConsumeSubQuery();
   testParseParentNode();
   testChompBalanced();
   testSelect();
