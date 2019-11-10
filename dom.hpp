@@ -54,11 +54,17 @@ class Node {
 public:
   // data common to all nodes;
   explicit Node(const std::string &str)
-      : nodeType(NodeType::Text), nodeData(str) {}
+      : nodeType(NodeType::Text), nodeData(str), parent(nullptr) {}
+
+  // data common to all nodes;
+  explicit Node(const std::string &str, const std::shared_ptr<Node> _parent)
+      : nodeType(NodeType::Text), nodeData(str), parent(_parent) {}
 
   explicit Node(const std::string &_name, const AttrMap &_attrMap,
-                std::vector<Node> _children) {
+                std::vector<Node> _children,
+                const std::shared_ptr<Node> _parent) {
     children = std::move(_children);
+    parent = _parent;
     ElementData elementData(_name, _attrMap);
     nodeType = NodeType ::Element;
     nodeData = elementData;
@@ -86,6 +92,8 @@ public:
   /// Get text of current node, throw exception if it's not a text type.
   [[nodiscard]] const std::string &getText() const;
 
+  [[nodiscard]] const std::shared_ptr<Node> &getParent() const;
+
   /// If current node is a element type.
   [[nodiscard]] bool isElement() const;
 
@@ -101,6 +109,8 @@ private:
 
   /// Node data, element or text
   NodeData nodeData;
+
+  std::shared_ptr<Node> parent;
 
   /// Get elements by call `predicate(node)` using BFS
   template <class Predicate> Nodes getElementsByPredicate(Predicate predicate) {

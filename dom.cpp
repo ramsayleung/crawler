@@ -41,6 +41,10 @@ const std::string &crawler::Node::getText() const {
   return std::get<std::string>(nodeData);
 }
 
+const std::shared_ptr<crawler::Node> &crawler::Node::getParent() const {
+  return parent;
+}
+
 std::string crawler::ElementData::clazz() const {
   auto clazz = attributes.find("class");
   std::string classValue;

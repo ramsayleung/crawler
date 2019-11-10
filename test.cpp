@@ -73,6 +73,10 @@ void testParse() {
   buffer << file.rdbuf();
   std::string source = buffer.str();
   crawler::Node node = crawler::parse(source);
+  crawler::Nodes nodes = node.select("#main");
+  ASSERT_TRUE(nodes.size() == 1);
+  crawler::Node mainNode = nodes.at(0);
+  ASSERT_CSTRING_EQ(mainNode.getElementData().clazz().c_str(), "test");
 }
 
 void testParseSelfClosingTag() {
@@ -211,7 +215,21 @@ void testChompBalanced() {
   ASSERT_CSTRING_EQ("one (two) three", queue.chompBalanced('(', ')').c_str());
 }
 
+void testParseParentNode() {
+  std::ifstream file("source/parseTest.html");
+  std::stringstream buffer;
+  buffer << file.rdbuf();
+  std::string source = buffer.str();
+  crawler::Node node = crawler::parse(source);
+  crawler::Nodes nodes = node.select("#child");
+  ASSERT_TRUE(nodes.size() == 1);
+  auto parentPtr = nodes.at(0).getParent();
+  ASSERT_TRUE(parentPtr != nullptr);
+  ASSERT_CSTRING_EQ(parentPtr->getElementData().id().c_str(), "parent");
+}
+
 int main() {
+  testParseParentNode();
   testChompBalanced();
   testSelect();
   testParserParse();
@@ -232,7 +250,7 @@ int main() {
   testParseAttributes();
   testParse();
   testConsumeComment();
-  testParseSelfClosingTag();
+
   // testHttp();
   PRINT_TEST_RESULT();
 }
