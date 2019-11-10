@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <iterator>
 #include <sstream>
+#include <string>
 
 namespace crawler {
 /**
@@ -17,7 +18,7 @@ namespace crawler {
  * @param cont container
  * @param delim delimeter
  */
-template <class Container>
+template<class Container>
 void split(const std::string &str, Container &cont, char delim = ' ') {
   std::size_t current, previous = 0;
   current = str.find(delim);
@@ -27,6 +28,15 @@ void split(const std::string &str, Container &cont, char delim = ' ') {
     current = str.find(delim, previous);
   }
   cont.insert(str.substr(previous, current - previous));
+}
+
+size_t indexOf(const std::string &subString, const std::string &source) {
+  auto foundIndex = source.find(subString);
+  if (foundIndex == std::string::npos) {
+    throw std::runtime_error(std::string("Cound not find index of subString: ") + subString);
+  } else {
+    return foundIndex;
+  }
 }
 
 // Check if `source` starts with `prefix`

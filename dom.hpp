@@ -37,6 +37,8 @@ public:
 
   [[nodiscard]] const AttrMap &getAttributes() const { return attributes; }
 
+  [[nodiscard]] bool containsAttribute(const std::string& key) const;
+
 private:
   /// The tag name of current node; eg <div class="test">, tagName = "div"
 
@@ -57,12 +59,12 @@ public:
       : nodeType(NodeType::Text), nodeData(str), parent(nullptr) {}
 
   // data common to all nodes;
-  explicit Node(const std::string &str, const std::shared_ptr<Node> _parent)
-      : nodeType(NodeType::Text), nodeData(str), parent(_parent) {}
+  explicit Node(const std::string &str, std::shared_ptr<Node>  _parent)
+      : nodeType(NodeType::Text), nodeData(str), parent(std::move(_parent)) {}
 
   explicit Node(const std::string &_name, const AttrMap &_attrMap,
                 std::vector<Node> _children,
-                const std::shared_ptr<Node> _parent) {
+                const std::shared_ptr<Node>& _parent) {
     children = std::move(_children);
     parent = _parent;
     ElementData elementData(_name, _attrMap);
@@ -290,6 +292,15 @@ private:
   std::string tagName;
 };
 
+/// Evaluator for attribute name matching
+class Attribute: public Evaluator{
+ public:
+  explicit Attribute(std::string key);
+  bool matches(const Node &root, const Node &node) override;
+ private:
+  std::string key;
+};
+
 class QueryParser {
 public:
   explicit QueryParser(const std::string &queryString);
@@ -313,6 +324,9 @@ private:
   /// Find element by tag name.
   void findByTag();
 
+  void findByAttribute();
+
+  /// Combine child selector.
   void combinator(char combinator);
 
   /// member variables.

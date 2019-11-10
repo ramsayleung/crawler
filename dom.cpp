@@ -33,9 +33,9 @@ crawler::Nodes crawler::Node::select(const std::string &cssQuery) {
   crawler::QueryParser cssParser(cssQuery);
   return select(*cssParser.parse());
 }
-bool crawler::Node::isElement() const { return nodeType == NodeType ::Element; }
+bool crawler::Node::isElement() const { return nodeType == NodeType::Element; }
 
-bool crawler::Node::isText() const { return nodeType == NodeType ::Text; }
+bool crawler::Node::isText() const { return nodeType == NodeType::Text; }
 
 const crawler::ElementData &crawler::Node::getElementData() const {
   return std::get<ElementData>(nodeData);
@@ -46,6 +46,17 @@ const std::string &crawler::Node::getText() const {
 
 const std::shared_ptr<crawler::Node> &crawler::Node::getParent() const {
   return parent;
+}
+
+bool crawler::ElementData::containsAttribute(const std::string &key) const {
+  if (startsWith("abs:", key)) {
+    size_t length = std::string("abs:").length();
+    size_t beginIndex = indexOf("abs:", key);
+    std::string attributeKey = key.substr(beginIndex, length);
+    return (this->attributes.find(attributeKey)) != attributes.end();
+  } else {
+    return (this->attributes.find(key)) != attributes.end();
+  }
 }
 
 std::string crawler::ElementData::clazz() const {
@@ -108,13 +119,13 @@ std::string crawler::TokenQueue::consumeCssIdentifier() {
   });
 }
 
-template <typename Predicate>
+template<typename Predicate>
 std::string crawler::TokenQueue::consumeByPredicate(Predicate predicate) {
   size_t start = pos;
   while (!eof() && (matchesWords() || predicate())) {
     pos++;
   }
-  const size_t length = pos -start;
+  const size_t length = pos - start;
   return data.substr(start, length);
 }
 
@@ -128,7 +139,7 @@ bool crawler::TokenQueue::matchesWords() {
   return !eof() && isalnum(data.c_str()[pos]);
 }
 
-template <size_t N>
+template<size_t N>
 bool crawler::TokenQueue::matchesAny(std::array<char, N> seq) {
   if (eof()) {
     return false;
@@ -136,7 +147,7 @@ bool crawler::TokenQueue::matchesAny(std::array<char, N> seq) {
   return std::any_of(seq.cbegin(), seq.cend(),
                      [this](const char c) { return data.c_str()[pos] == c; });
 }
-template <size_t N>
+template<size_t N>
 bool crawler::TokenQueue::matchesAny(std::array<std::string, N> seq) {
   for (auto const &s : seq) {
     if (matches(s)) {
@@ -290,6 +301,9 @@ std::string crawler::TokenQueue::consumeSubQuery() {
 
 crawler::QueryParser::QueryParser(const std::string &queryString)
     : queryString(queryString), tokenQueue(queryString) {}
+void crawler::QueryParser::findByAttribute() {
+  TokenQueue attributeQueue(tokenQueue.chompBalanced('[',']'));
+}
 
 crawler::Id::Id(std::string id) : id(std::move(id)) {}
 bool crawler::Id::matches(const crawler::Node &root,
@@ -329,7 +343,7 @@ crawler::Or::Or(const std::vector<Evaluator *> &evalutors)
     : CombiningEvaluator(evalutors) {}
 
 crawler::Parent::Parent(std::shared_ptr<Evaluator *> _eval)
-    : StructuralEvaluator(_eval){};
+    : StructuralEvaluator(_eval) {};
 
 bool crawler::Parent::matches(const crawler::Node &root,
                               const crawler::Node &node) {
@@ -352,14 +366,18 @@ bool crawler::Parent::matches(const crawler::Node &root,
 }
 
 crawler::ImmediateParent::ImmediateParent(std::shared_ptr<Evaluator *> _eval)
-    : StructuralEvaluator(_eval){};
+    : StructuralEvaluator(_eval) {};
 
 bool crawler::ImmediateParent::matches(const crawler::Node &root,
                                        const crawler::Node &node) {
-  const std::shared_ptr<crawler::Node>& parentPtr = node.getParent();
+  const std::shared_ptr<crawler::Node> &parentPtr = node.getParent();
   if (parentPtr == nullptr) {
     return false;
   }
   Evaluator *eval = *this->evaluator;
   return eval->matches(root, *parentPtr);
+}
+crawler::Attribute::Attribute(std::string key) : key(std::move(key)) {}
+bool crawler::Attribute::matches(const crawler::Node &root, const crawler::Node &node) {
+  return node.getElementData().containsAttribute(key);
 }
