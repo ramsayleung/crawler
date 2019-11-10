@@ -141,7 +141,7 @@ public:
   explicit TokenQueue(std::string data, size_t pos);
 
   /// Consume whitespace.
-  void consumeWhiteSpace();
+  bool consumeWhiteSpace();
 
   /// Tests if the next characters is whitespace.
   bool matchesWhitespace();

@@ -3,8 +3,11 @@ project(doubanCrawler)
 
 option(DEBUG_MODE "enable debug mode" off)
 if (DEBUG_MODE)
-    add_definitions(-DDEBUG)
+  add_definitions(-DDEBUG)
 endif ()
+## Configure debug flag to enable debug log
+
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Wall")
 
 set(CMAKE_CXX_STANDARD 17)
 set(SOURCES ${SOURCES} ${CMAKE_CURRENT_SOURCE_DIR}/dom.cpp ${CMAKE_CURRENT_SOURCE_DIR}/html.cpp ${CMAKE_CURRENT_SOURCE_DIR}/http.cpp)

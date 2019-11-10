@@ -16,7 +16,7 @@ void printNode(const crawler::Node &result) {
   crawler::AttrMap attributes = result.getElementData().getAttributes();
   for (auto const &keyValuePair : attributes) {
     TRACE(("key: %s value: %s\n", keyValuePair.first.c_str(),
-           keyValuePair.second.c_str()));
+        keyValuePair.second.c_str()));
   }
 }
 
@@ -169,6 +169,9 @@ void testMatchesAny() {
 void testConsumeCssIdentifier() {
   crawler::TokenQueue tokenQueue("a[href]");
   ASSERT_CSTRING_EQ("a", tokenQueue.consumeCssIdentifier().c_str());
+
+  crawler::TokenQueue idQueue("main > div");
+  ASSERT_CSTRING_EQ("main", idQueue.consumeCssIdentifier().c_str());
 }
 
 void testParserParse() {
@@ -247,6 +250,7 @@ void testParseParentNode() {
 }
 
 int main() {
+  testCombinatorSelect();
   testConsumeSubQuery();
   testParseParentNode();
   testChompBalanced();

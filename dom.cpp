@@ -68,10 +68,13 @@ std::string crawler::ElementData::id() const {
 crawler::TokenQueue::TokenQueue(std::string data, size_t pos)
     : data(std::move(data)), pos(pos) {}
 
-void crawler::TokenQueue::consumeWhiteSpace() {
+bool crawler::TokenQueue::consumeWhiteSpace() {
+  bool seen = false;
   while (matchesWhitespace()) {
     pos++;
+    seen = true;
   }
+  return seen;
 }
 
 bool crawler::TokenQueue::matchesWhitespace() {
@@ -111,7 +114,8 @@ std::string crawler::TokenQueue::consumeByPredicate(Predicate predicate) {
   while (!eof() && (matchesWords() || predicate())) {
     pos++;
   }
-  return data.substr(start, pos);
+  const size_t length = pos -start;
+  return data.substr(start, length);
 }
 
 std::string crawler::TokenQueue::consumeElementSelector() {
@@ -191,13 +195,20 @@ std::shared_ptr<crawler::Evaluator *> crawler::QueryParser::parse() {
   // not support combinator for now.
   tokenQueue.consumeWhiteSpace();
   if (tokenQueue.matchesAny(COMBINATORS)) {
-
+    combinator(tokenQueue.consume());
   } else {
     findElements();
   }
   while (!tokenQueue.eof()) {
-    tokenQueue.consumeWhiteSpace();
-    findElements();
+    bool seenWhiteSpace = tokenQueue.consumeWhiteSpace();
+    if (tokenQueue.matchesAny(COMBINATORS)) {
+      combinator(tokenQueue.consume());
+    } else if (seenWhiteSpace) {
+      combinator(' ');
+    } else {
+      // E.class, E#id, E[attr] etc. AND
+      findElements();
+    }
   }
   if (evals.size() == 1) {
     return std::make_shared<crawler::Evaluator *>(evals.front());
@@ -243,6 +254,8 @@ void crawler::QueryParser::combinator(char combinator) {
   std::shared_ptr<Evaluator *> newEval = crawler::QueryParser::parse(subQuery);
   if (evals.size() == 1) {
     currentEval = evals.at(0);
+  } else {
+    currentEval = new And(evals);
   }
   evals.clear();
   if (combinator == '>') {
@@ -343,7 +356,7 @@ crawler::ImmediateParent::ImmediateParent(std::shared_ptr<Evaluator *> _eval)
 
 bool crawler::ImmediateParent::matches(const crawler::Node &root,
                                        const crawler::Node &node) {
-  const std::shared_ptr<crawler::Node> parentPtr = node.getParent();
+  const std::shared_ptr<crawler::Node>& parentPtr = node.getParent();
   if (parentPtr == nullptr) {
     return false;
   }
