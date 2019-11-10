@@ -215,10 +215,21 @@ void testCombinatorSelect() {
   buffer << file.rdbuf();
   std::string source = buffer.str();
   crawler::Node node = crawler::parse(source);
-  crawler::Nodes nodes = node.select("div#main > div");
-  ASSERT_TRUE(nodes.size() == 1);
-  crawler::Node divNode = nodes.front();
+  crawler::Nodes nodes = node.select("div.child");
+  ASSERT_UNSIGNED_LONG_EQ(nodes.size(), 1UL);
+  crawler::Node nodeWithChildClass = nodes.front();
+  ASSERT_CSTRING_EQ(nodeWithChildClass.getElementData().id().c_str(), "child");
+
+   nodes = node.select("div.parent > div.child");
+  ASSERT_UNSIGNED_LONG_EQ(nodes.size(), 1UL);
+  crawler::Node childNodeWithChildClass = nodes.front();
+  ASSERT_CSTRING_EQ(childNodeWithChildClass.getElementData().id().c_str(), "child");
+
+  crawler::Nodes anotherNodes = node.select("div#main > div");
+  ASSERT_TRUE(anotherNodes.size() == 1);
+  crawler::Node divNode = anotherNodes.front();
   ASSERT_CSTRING_EQ(divNode.getElementData().id().c_str(), "parent");
+
 }
 
 void testChompBalanced() {

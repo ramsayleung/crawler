@@ -213,8 +213,8 @@ std::shared_ptr<crawler::Evaluator *> crawler::QueryParser::parse() {
   if (evals.size() == 1) {
     return std::make_shared<crawler::Evaluator *>(evals.front());
   } else {
-    crawler::And andEvaluator(evals);
-    return std::make_shared<crawler::Evaluator *>(&andEvaluator);
+    auto *andEvaluator = new crawler::And(evals);
+    return std::make_shared<crawler::Evaluator *>(andEvaluator);
   }
 }
 
