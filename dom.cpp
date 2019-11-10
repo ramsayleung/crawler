@@ -5,6 +5,9 @@
 #include "dom.hpp"
 
 #include <algorithm>
+#include <memory>
+#include <sstream>
+#include <stdexcept>
 #include <utility>
 
 crawler::Nodes crawler::Node::getElementsByTag(const std::string &tagName) {
@@ -41,6 +44,10 @@ const std::string &crawler::Node::getText() const {
   return std::get<std::string>(nodeData);
 }
 
+const std::shared_ptr<crawler::Node> &crawler::Node::getParent() const {
+  return parent;
+}
+
 std::string crawler::ElementData::clazz() const {
   auto clazz = attributes.find("class");
   std::string classValue;
@@ -61,10 +68,13 @@ std::string crawler::ElementData::id() const {
 crawler::TokenQueue::TokenQueue(std::string data, size_t pos)
     : data(std::move(data)), pos(pos) {}
 
-void crawler::TokenQueue::consumeWhiteSpace() {
+bool crawler::TokenQueue::consumeWhiteSpace() {
+  bool seen = false;
   while (matchesWhitespace()) {
     pos++;
+    seen = true;
   }
+  return seen;
 }
 
 bool crawler::TokenQueue::matchesWhitespace() {
@@ -104,7 +114,8 @@ std::string crawler::TokenQueue::consumeByPredicate(Predicate predicate) {
   while (!eof() && (matchesWords() || predicate())) {
     pos++;
   }
-  return data.substr(start, pos);
+  const size_t length = pos -start;
+  return data.substr(start, length);
 }
 
 std::string crawler::TokenQueue::consumeElementSelector() {
@@ -183,18 +194,36 @@ char crawler::TokenQueue::consume() { return data.c_str()[pos++]; }
 std::shared_ptr<crawler::Evaluator *> crawler::QueryParser::parse() {
   // not support combinator for now.
   tokenQueue.consumeWhiteSpace();
-  findElements();
-  while (!tokenQueue.eof()) {
-    tokenQueue.consumeWhiteSpace();
+  if (tokenQueue.matchesAny(COMBINATORS)) {
+    combinator(tokenQueue.consume());
+  } else {
     findElements();
+  }
+  while (!tokenQueue.eof()) {
+    bool seenWhiteSpace = tokenQueue.consumeWhiteSpace();
+    if (tokenQueue.matchesAny(COMBINATORS)) {
+      combinator(tokenQueue.consume());
+    } else if (seenWhiteSpace) {
+      combinator(' ');
+    } else {
+      // E.class, E#id, E[attr] etc. AND
+      findElements();
+    }
   }
   if (evals.size() == 1) {
     return std::make_shared<crawler::Evaluator *>(evals.front());
   } else {
-    crawler::And andEvaluator(evals);
-    return std::make_shared<crawler::Evaluator *>(&andEvaluator);
+    auto *andEvaluator = new crawler::And(evals);
+    return std::make_shared<crawler::Evaluator *>(andEvaluator);
   }
 }
+
+std::shared_ptr<crawler::Evaluator *>
+crawler::QueryParser::parse(const std::string &cssQuery) {
+  QueryParser queryParser(cssQuery);
+  return queryParser.parse();
+}
+
 void crawler::QueryParser::findElements() {
   if (tokenQueue.matchesChomp("#")) {
     findById();
@@ -217,6 +246,48 @@ void crawler::QueryParser::findByTag() {
   std::string tagName = tokenQueue.consumeElementSelector();
   evals.emplace_back(new Tag(tagName));
 }
+
+void crawler::QueryParser::combinator(char combinator) {
+  tokenQueue.consumeWhiteSpace();
+  std::string subQuery = tokenQueue.consumeSubQuery();
+  Evaluator *currentEval;
+  std::shared_ptr<Evaluator *> newEval = crawler::QueryParser::parse(subQuery);
+  if (evals.size() == 1) {
+    currentEval = evals.at(0);
+  } else {
+    currentEval = new And(evals);
+  }
+  evals.clear();
+  if (combinator == '>') {
+    Evaluator *immediateParent = new ImmediateParent(
+        std::make_shared<crawler::Evaluator *>(currentEval));
+    currentEval = new And({*newEval, immediateParent});
+  } else if (combinator == ' ') {
+    Evaluator *parent =
+        new Parent(std::make_shared<crawler::Evaluator *>(currentEval));
+    currentEval = new And({*newEval, parent});
+  } else {
+    throw std::runtime_error("Unknown combinator");
+  }
+  evals.emplace_back(currentEval);
+}
+
+std::string crawler::TokenQueue::consumeSubQuery() {
+  std::stringstream buffer;
+  while (!eof()) {
+    if (matches("(")) {
+      buffer << "(" << chompBalanced('(', ')') << ")";
+    } else if (matches("[")) {
+      buffer << "[" << chompBalanced('[', ']') << "]";
+    } else if (matchesAny(crawler::QueryParser::COMBINATORS)) {
+      break;
+    } else {
+      buffer << consume();
+    }
+  }
+  return buffer.str();
+}
+
 crawler::QueryParser::QueryParser(const std::string &queryString)
     : queryString(queryString), tokenQueue(queryString) {}
 
@@ -256,3 +327,39 @@ bool crawler::Or::matches(const crawler::Node &root,
 }
 crawler::Or::Or(const std::vector<Evaluator *> &evalutors)
     : CombiningEvaluator(evalutors) {}
+
+crawler::Parent::Parent(std::shared_ptr<Evaluator *> _eval)
+    : StructuralEvaluator(_eval){};
+
+bool crawler::Parent::matches(const crawler::Node &root,
+                              const crawler::Node &node) {
+  Evaluator *eval = *this->evaluator;
+  const std::shared_ptr<crawler::Node> parentPtr = node.getParent();
+  if (parentPtr == nullptr) {
+    return false;
+  }
+  auto parent = *parentPtr;
+  while (true) {
+    if (eval->matches(root, parent)) {
+      return true;
+    }
+    if (parent.getParent() == nullptr) {
+      return false;
+    }
+    parent = *parent.getParent();
+  }
+  return false;
+}
+
+crawler::ImmediateParent::ImmediateParent(std::shared_ptr<Evaluator *> _eval)
+    : StructuralEvaluator(_eval){};
+
+bool crawler::ImmediateParent::matches(const crawler::Node &root,
+                                       const crawler::Node &node) {
+  const std::shared_ptr<crawler::Node>& parentPtr = node.getParent();
+  if (parentPtr == nullptr) {
+    return false;
+  }
+  Evaluator *eval = *this->evaluator;
+  return eval->matches(root, *parentPtr);
+}

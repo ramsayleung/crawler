@@ -54,11 +54,17 @@ class Node {
 public:
   // data common to all nodes;
   explicit Node(const std::string &str)
-      : nodeType(NodeType::Text), nodeData(str) {}
+      : nodeType(NodeType::Text), nodeData(str), parent(nullptr) {}
+
+  // data common to all nodes;
+  explicit Node(const std::string &str, const std::shared_ptr<Node> _parent)
+      : nodeType(NodeType::Text), nodeData(str), parent(_parent) {}
 
   explicit Node(const std::string &_name, const AttrMap &_attrMap,
-                std::vector<Node> _children) {
+                std::vector<Node> _children,
+                const std::shared_ptr<Node> _parent) {
     children = std::move(_children);
+    parent = _parent;
     ElementData elementData(_name, _attrMap);
     nodeType = NodeType ::Element;
     nodeData = elementData;
@@ -86,6 +92,8 @@ public:
   /// Get text of current node, throw exception if it's not a text type.
   [[nodiscard]] const std::string &getText() const;
 
+  [[nodiscard]] const std::shared_ptr<Node> &getParent() const;
+
   /// If current node is a element type.
   [[nodiscard]] bool isElement() const;
 
@@ -101,6 +109,8 @@ private:
 
   /// Node data, element or text
   NodeData nodeData;
+
+  std::shared_ptr<Node> parent;
 
   /// Get elements by call `predicate(node)` using BFS
   template <class Predicate> Nodes getElementsByPredicate(Predicate predicate) {
@@ -131,7 +141,7 @@ public:
   explicit TokenQueue(std::string data, size_t pos);
 
   /// Consume whitespace.
-  void consumeWhiteSpace();
+  bool consumeWhiteSpace();
 
   /// Tests if the next characters is whitespace.
   bool matchesWhitespace();
@@ -162,6 +172,8 @@ public:
   /// namespaces (or *| for wildcard namespace), to not conflict with :pseudo
   /// selects).
   std::string consumeElementSelector();
+
+  std::string consumeSubQuery();
 
   /// Pulls a balanced string off the queue. E.g. if queue is "(one (two) three)
   /// four", (,) will return "one (two) three", and leave " four" on the queue.
@@ -206,6 +218,31 @@ public:
 
 protected:
   std::vector<Evaluator *> evalutors;
+};
+
+/// Structural Evaluator
+class StructuralEvaluator : public Evaluator {
+public:
+  explicit StructuralEvaluator(std::shared_ptr<Evaluator *> _eval)
+      : evaluator(_eval) {}
+  virtual bool matches(const crawler::Node &root, const crawler::Node &node) {
+    return false;
+  }
+
+protected:
+  std::shared_ptr<Evaluator *> evaluator;
+};
+
+class Parent : public StructuralEvaluator {
+public:
+  explicit Parent(std::shared_ptr<Evaluator *> _evaluator);
+  bool matches(const crawler::Node &root, const crawler::Node &node) override;
+};
+
+class ImmediateParent : public StructuralEvaluator {
+public:
+  explicit ImmediateParent(std::shared_ptr<Evaluator *> _evaluator);
+  bool matches(const crawler::Node &root, const crawler::Node &node) override;
 };
 
 class And final : public CombiningEvaluator {
@@ -259,6 +296,10 @@ public:
 
   std::shared_ptr<Evaluator *> parse();
 
+  static std::shared_ptr<Evaluator *> parse(const std::string &cssQuery);
+
+  inline static const std::array<std::string, 5> COMBINATORS = {",", ">", "+",
+                                                                "~", " "};
 private:
   /// find elements.
   void findElements();
@@ -271,8 +312,15 @@ private:
 
   /// Find element by tag name.
   void findByTag();
+
+  void combinator(char combinator);
+
+  /// member variables.
+
   std::string queryString;
+
   TokenQueue tokenQueue;
+
   std::vector<Evaluator *> evals;
 };
 

@@ -16,7 +16,7 @@ void printNode(const crawler::Node &result) {
   crawler::AttrMap attributes = result.getElementData().getAttributes();
   for (auto const &keyValuePair : attributes) {
     TRACE(("key: %s value: %s\n", keyValuePair.first.c_str(),
-           keyValuePair.second.c_str()));
+        keyValuePair.second.c_str()));
   }
 }
 
@@ -73,6 +73,10 @@ void testParse() {
   buffer << file.rdbuf();
   std::string source = buffer.str();
   crawler::Node node = crawler::parse(source);
+  crawler::Nodes nodes = node.select("#main");
+  ASSERT_TRUE(nodes.size() == 1);
+  crawler::Node mainNode = nodes.at(0);
+  ASSERT_CSTRING_EQ(mainNode.getElementData().clazz().c_str(), "test");
 }
 
 void testParseSelfClosingTag() {
@@ -165,6 +169,9 @@ void testMatchesAny() {
 void testConsumeCssIdentifier() {
   crawler::TokenQueue tokenQueue("a[href]");
   ASSERT_CSTRING_EQ("a", tokenQueue.consumeCssIdentifier().c_str());
+
+  crawler::TokenQueue idQueue("main > div");
+  ASSERT_CSTRING_EQ("main", idQueue.consumeCssIdentifier().c_str());
 }
 
 void testParserParse() {
@@ -197,9 +204,32 @@ void testSelect() {
   }
   nodes = node.select("#main");
   ASSERT_TRUE(nodes.size() == 1);
-  crawler::Node main = nodes.front();
-  ASSERT_CSTRING_EQ(main.getElementData().getTagName().c_str(), "div");
-  ASSERT_CSTRING_EQ(main.getElementData().clazz().c_str(), "test");
+  crawler::Node mainNode = nodes.front();
+  ASSERT_CSTRING_EQ(mainNode.getElementData().getTagName().c_str(), "div");
+  ASSERT_CSTRING_EQ(mainNode.getElementData().clazz().c_str(), "test");
+}
+
+void testCombinatorSelect() {
+  std::ifstream file("source/parseTest.html");
+  std::stringstream buffer;
+  buffer << file.rdbuf();
+  std::string source = buffer.str();
+  crawler::Node node = crawler::parse(source);
+  crawler::Nodes nodes = node.select("div.child");
+  ASSERT_UNSIGNED_LONG_EQ(nodes.size(), 1UL);
+  crawler::Node nodeWithChildClass = nodes.front();
+  ASSERT_CSTRING_EQ(nodeWithChildClass.getElementData().id().c_str(), "child");
+
+   nodes = node.select("div.parent > div.child");
+  ASSERT_UNSIGNED_LONG_EQ(nodes.size(), 1UL);
+  crawler::Node childNodeWithChildClass = nodes.front();
+  ASSERT_CSTRING_EQ(childNodeWithChildClass.getElementData().id().c_str(), "child");
+
+  crawler::Nodes anotherNodes = node.select("div#main > div");
+  ASSERT_TRUE(anotherNodes.size() == 1);
+  crawler::Node divNode = anotherNodes.front();
+  ASSERT_CSTRING_EQ(divNode.getElementData().id().c_str(), "parent");
+
 }
 
 void testChompBalanced() {
@@ -211,7 +241,29 @@ void testChompBalanced() {
   ASSERT_CSTRING_EQ("one (two) three", queue.chompBalanced('(', ')').c_str());
 }
 
+void testConsumeSubQuery() {
+  crawler::TokenQueue tokenQueue("ol, ol > li + li");
+  const std::string subQuery = tokenQueue.consumeSubQuery();
+  ASSERT_TRUE(subQuery == "ol");
+}
+
+void testParseParentNode() {
+  std::ifstream file("source/parseTest.html");
+  std::stringstream buffer;
+  buffer << file.rdbuf();
+  std::string source = buffer.str();
+  crawler::Node node = crawler::parse(source);
+  crawler::Nodes nodes = node.select("#child");
+  ASSERT_TRUE(nodes.size() == 1);
+  auto parentPtr = nodes.at(0).getParent();
+  ASSERT_TRUE(parentPtr != nullptr);
+  ASSERT_CSTRING_EQ(parentPtr->getElementData().id().c_str(), "parent");
+}
+
 int main() {
+  testCombinatorSelect();
+  testConsumeSubQuery();
+  testParseParentNode();
   testChompBalanced();
   testSelect();
   testParserParse();
@@ -232,7 +284,7 @@ int main() {
   testParseAttributes();
   testParse();
   testConsumeComment();
-  testParseSelfClosingTag();
+
   // testHttp();
   PRINT_TEST_RESULT();
 }

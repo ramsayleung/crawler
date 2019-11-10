@@ -5,6 +5,7 @@
 #include "html.hpp"
 #include "dom.hpp"
 #include <cassert>
+#include <memory>
 #include <regex>
 #include <utility>
 #include <vector>
@@ -53,7 +54,8 @@ void crawler::Parser::consumeComment() {
   std::regex_replace(input, pattern, emptyString);
 }
 
-crawler::Node crawler::Parser::parseText() {
+crawler::Node
+crawler::Parser::parseText(const std::shared_ptr<crawler::Node> parent) {
   return crawler::Node(consumeWhile([](char c) -> bool { return c != '<'; }));
 }
 
@@ -88,11 +90,14 @@ crawler::AttrMap crawler::Parser::parseAttributes() {
   }
   return attributes;
 }
-crawler::Node crawler::Parser::parseElement() {
+crawler::Node crawler::Parser::parseElement() { return parseElement(nullptr); }
+crawler::Node
+crawler::Parser::parseElement(const std::shared_ptr<crawler::Node> parent) {
   // Opening tag.
   assert(consumeChar() == '<');
   const std::string tagName = parseTagName();
   const std::map<std::string, std::string> attributes = parseAttributes();
+  const std::vector<crawler::Node> emptyChild;
   if (isSelfClosingTag(tagName)) {
     // self-closing has various format, such as <img> or <img/>
     if (nextChar() == '>') {
@@ -101,23 +106,29 @@ crawler::Node crawler::Parser::parseElement() {
       assert(consumeChar() == '/');
       assert(consumeChar() == '>');
     }
-    const std::vector<crawler::Node> emptyChild;
-    return crawler::Node(tagName, attributes, emptyChild);
+    return crawler::Node(tagName, attributes, emptyChild, parent);
   } else {
     assert(consumeChar() == '>');
   }
-
+  crawler::Node currentNode(tagName, attributes, emptyChild, parent);
+  auto ptr = std::make_shared<crawler::Node>(currentNode);
   // Contents.
-  const std::vector<crawler::Node> children = parseNodes();
+  const std::vector<crawler::Node> children = parseNodes(ptr);
   // Closing tag.
   assert(consumeChar() == '<');
   assert(consumeChar() == '/');
   assert(parseTagName() == tagName);
   assert(consumeChar() == '>');
-  crawler::Node node(tagName, attributes, children);
+  crawler::Node node(tagName, attributes, children, parent);
   return node;
 }
+
 std::vector<crawler::Node> crawler::Parser::parseNodes() {
+  return parseNodes(nullptr);
+}
+
+std::vector<crawler::Node>
+crawler::Parser::parseNodes(const std::shared_ptr<crawler::Node> parent) {
   consumeComment();
   std::vector<crawler::Node> nodes;
   while (true) {
@@ -125,15 +136,19 @@ std::vector<crawler::Node> crawler::Parser::parseNodes() {
     if (eof() || startsWith("</")) {
       break;
     }
-    nodes.emplace_back(parseNode());
+    nodes.emplace_back(parseNode(parent));
   }
   return nodes;
 }
-crawler::Node crawler::Parser::parseNode() {
+
+crawler::Node crawler::Parser::parseNode() { return parseNode(nullptr); }
+
+crawler::Node
+crawler::Parser::parseNode(const std::shared_ptr<crawler::Node> parent) {
   if (nextChar() == '<') {
-    return parseElement();
+    return parseElement(parent);
   } else {
-    return parseText();
+    return parseText(parent);
   }
 }
 
@@ -144,7 +159,7 @@ crawler::Parser::Parser(size_t _pos, std::string _input) {
 
 crawler::Node parse(const std::string &source) {
   const std::vector<crawler::Node> nodes =
-      crawler::Parser(0, source).parseNodes();
+      crawler::Parser(0, source).parseNodes(nullptr);
 
   // If the document contains a root element, just return it, Otherwise, create
   // one.
@@ -153,7 +168,7 @@ crawler::Node parse(const std::string &source) {
   } else {
     const std::string html("html");
     const crawler::AttrMap attributes;
-    return crawler::Node(html, attributes, nodes);
+    return crawler::Node(html, attributes, nodes, nullptr);
   }
 }
 } // namespace crawler
