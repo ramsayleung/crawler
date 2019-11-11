@@ -334,7 +334,34 @@ void testSelectByAttributeWithValueNot() {
       "ramsay", nodes.front().getElementData().getValueByKey("name").c_str());
 }
 
+void testSelectByAttributeValueStartWithPrefix() {
+  crawler::Node node = crawler::parse(
+      R"(<div name="ramsay"></div><div name="fancy" id="test"></div>)");
+  crawler::Nodes nodes = node.select("[name^=fancy]");
+  ASSERT_UNSIGNED_LONG_EQ(1UL, nodes.size());
+  ASSERT_CSTRING_EQ("test", nodes.front().getElementData().id().c_str());
+}
+
+void testSelectByAttributeValueEndWithSuffix() {
+  crawler::Node node = crawler::parse(
+      R"(<div name="ramsay" id="foo"></div><div name="fancy" id="test"></div>)");
+  crawler::Nodes nodes = node.select("[name$=ay]");
+  ASSERT_UNSIGNED_LONG_EQ(1UL, nodes.size());
+  ASSERT_CSTRING_EQ("foo", nodes.front().getElementData().id().c_str());
+}
+
+void testSelectByAttributeValueContainsSubString() {
+  crawler::Node node = crawler::parse(
+      R"(<div name="ramsay" id="foo"></div><div name="fancy" id="test"></div>)");
+  crawler::Nodes nodes = node.select("[name*=ms]");
+  ASSERT_UNSIGNED_LONG_EQ(1UL, nodes.size());
+  ASSERT_CSTRING_EQ("foo", nodes.front().getElementData().id().c_str());
+}
+
 int main() {
+  testSelectByAttributeValueContainsSubString();
+  testSelectByAttributeValueEndWithSuffix();
+  testSelectByAttributeValueStartWithPrefix();
   testSelectByAttributeWithValueNot();
   testNormalize();
   testSelectByAttributeWithValue();

@@ -28,14 +28,8 @@ void split(const std::string &str, Container &cont, char delim = ' ') {
 
 /// Find index of subString in `source`.
 inline size_t indexOf(const std::string &subString, const std::string &source) {
-  auto foundIndex = source.find(subString);
-  if (foundIndex == std::string::npos) {
-    throw std::runtime_error(
-        std::string("Cound not find index of subString: ") + subString);
-  } else {
-    return foundIndex;
-  }
-}
+  return source.find(subString);
+} // namespace crawler
 
 /// Convert `input` to lower case and trim it.
 inline std::string normalize(const std::string &input) {
