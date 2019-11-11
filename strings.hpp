@@ -31,6 +31,7 @@ void split(const std::string &str, Container &cont, char delim = ' ') {
   cont.insert(str.substr(previous, current - previous));
 }
 
+/// Find index of subString in `source`.
 inline size_t indexOf(const std::string &subString, const std::string &source) {
   auto foundIndex = source.find(subString);
   if (foundIndex == std::string::npos) {
@@ -41,18 +42,34 @@ inline size_t indexOf(const std::string &subString, const std::string &source) {
   }
 }
 
-// Check if `source` starts with `prefix`
+/// Convert `input` to lower case and trim it.
+inline std::string normalize(const std::string &input) {
+  std::string buffer = input;
+  std::transform(buffer.begin(), buffer.end(), buffer.begin(), ::tolower);
+  return buffer;
+} // namespace crawler
+
+/// Check if `source` starts with `prefix`
 inline bool startsWith(const std::string &prefix, const std::string &source) {
-  return source.rfind(prefix, 0) == 0;
+  //  return source.rfind(prefix, 0) == 0;
+  return source.size() >= prefix.size() &&
+         (source.compare(0, prefix.size(), prefix) == 0);
 }
 
-// Check if `source` starts with `prefix`
+/// Check if `source` ends with `suffix`
+inline bool endsWith(const std::string &suffix, const std::string &source) {
+  return source.size() >= suffix.size() &&
+         0 == source.compare(source.size() - suffix.size(), suffix.size(),
+                             suffix);
+}
+
+/// Check if `source` starts with `prefix`
 inline bool startsWith(const std::string &prefix, const std::string &source,
                        size_t begin, size_t end) {
   return startsWith(prefix, source.substr(begin, end));
 }
 
-// Check if `source` contains `substring`
+/// Check if `source` contains `substring`
 inline bool contains(const std::string &substring, const std::string &source) {
   return (source.find(substring) != std::string::npos);
 }

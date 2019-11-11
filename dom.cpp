@@ -60,12 +60,7 @@ bool crawler::ElementData::containsAttribute(const std::string &key) const {
 }
 
 std::string crawler::ElementData::clazz() const {
-  auto clazz = attributes.find("class");
-  std::string classValue;
-  if (clazz != attributes.end()) {
-    return clazz->second;
-  }
-  return classValue;
+  return getValueByKey("class");
 }
 std::string crawler::ElementData::id() const {
   auto result = attributes.find("id");
@@ -74,6 +69,15 @@ std::string crawler::ElementData::id() const {
   } else {
     return std::string("");
   }
+}
+const std::string
+crawler::ElementData::getValueByKey(const std::string &key) const {
+  auto clazz = attributes.find(key);
+  std::string classValue;
+  if (clazz != attributes.end()) {
+    return clazz->second;
+  }
+  return classValue;
 }
 
 crawler::TokenQueue::TokenQueue(std::string data, size_t pos)
@@ -227,6 +231,10 @@ void crawler::QueryParser::findElements() {
     findByTag();
   } else if (tokenQueue.matches("[")) {
     findByAttribute();
+  } else {
+    std::string errorMsg("Could parse unexpected token: ");
+    errorMsg += tokenQueue.remainder();
+    throw std::runtime_error(errorMsg);
   }
 }
 void crawler::QueryParser::findById() {
@@ -283,10 +291,11 @@ std::string crawler::TokenQueue::consumeSubQuery() {
   }
   return buffer.str();
 }
-// template <size_t N>
-// std::string crawler::TokenQueue::consumeToAny(std::array<std::string, N> seq)
-// {
-//}
+std::string crawler::TokenQueue::remainder() {
+  const std::string remainder = data.substr(pos, data.size());
+  pos = data.size();
+  return remainder;
+}
 
 crawler::QueryParser::QueryParser(const std::string &queryString)
     : queryString(queryString), tokenQueue(queryString) {}
@@ -302,6 +311,10 @@ void crawler::QueryParser::findByAttribute() {
       evals.emplace_back(new Attribute(key));
     }
   } else {
+    if (attributeQueue.matchesChomp("=")) {
+      evals.emplace_back(
+          new AttributeWithValue(key, attributeQueue.remainder()));
+    }
     // TODO
   }
 }
@@ -394,4 +407,28 @@ bool crawler::AttributeKeyStartWithPrefix::matches(const crawler::Node &root,
                        std::string key = element.first;
                        return startsWith(keyPrefix, key);
                      });
+}
+crawler::AttributeKeyValuePair::AttributeKeyValuePair(
+    const std::string &_key, const std::string &_value) {
+  key = normalize(_key);
+  std::string tmpValue = _value;
+  // if key-value pair is foo= 'bar' or foo = "bar", extract `bar` from value,
+  // and replace it as value.
+  if ((crawler::startsWith("\"", _value) && crawler::endsWith("\"", _value)) ||
+      (crawler::startsWith("'", _value) && crawler::endsWith("'", _value))) {
+    tmpValue = _value.substr(1, _value.size() - 2);
+  }
+  value = tmpValue;
+}
+bool crawler::AttributeKeyValuePair::matches(const crawler::Node &root,
+                                             const crawler::Node &node) {
+  return false;
+}
+crawler::AttributeWithValue::AttributeWithValue(const std::string &key,
+                                                const std::string &value)
+    : AttributeKeyValuePair(key, value) {}
+bool crawler::AttributeWithValue::matches(const crawler::Node &root,
+                                          const crawler::Node &node) {
+  return node.getElementData().containsAttribute(this->key) &&
+         (value == node.getElementData().getValueByKey(key));
 }

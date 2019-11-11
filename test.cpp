@@ -40,6 +40,12 @@ void testStartsWith() {
   ASSERT_INT_EQ(true, crawler::startsWith(prefix, source, 2, 6));
 }
 
+void testEndsWith() {
+  const std::string source = "tititoto";
+  std::string suffix = "toto";
+  ASSERT_TRUE(crawler::endsWith(suffix, source));
+}
+
 void testParseElement() {
   const std::string source = R"(<div id="main" class="test"></div>)";
   crawler::Parser parser(0, source);
@@ -297,7 +303,31 @@ void testSelectByAttributeKeyStartWithPrefix() {
   ASSERT_CSTRING_EQ("form", form.getElementData().getTagName().c_str());
 }
 
+void testNormalize() {
+  std::string input("Abc");
+  ASSERT_CSTRING_EQ("abc", crawler::normalize(input).c_str());
+}
+
+void testSelectByAttributeWithValue() {
+  std::ifstream file("source/parseTest.html");
+  std::stringstream buffer;
+  buffer << file.rdbuf();
+  std::string source = buffer.str();
+  crawler::Node node = crawler::parse(source);
+  crawler::Nodes nodes = node.select(R"([for="inp-query"])");
+  ASSERT_UNSIGNED_LONG_EQ(1UL, nodes.size());
+  crawler::Node label = nodes.front();
+  ASSERT_CSTRING_EQ("label", label.getElementData().getTagName().c_str());
+
+  nodes = node.select(R"(.test > div[class=parent])");
+  ASSERT_UNSIGNED_LONG_EQ(1UL, nodes.size());
+  crawler::Node div = nodes.front();
+  ASSERT_CSTRING_EQ("parent", div.getElementData().id().c_str());
+}
+
 int main() {
+  testNormalize();
+  testSelectByAttributeWithValue();
   testSelectByAttributeKeyStartWithPrefix();
   testSelectByAttributeKey();
   testConsumeToAny();
@@ -318,6 +348,7 @@ int main() {
   testGetElementById();
   testEqualMacro();
   testSplit();
+  testEndsWith();
   testStartsWith();
   testStringContains();
   testParseElement();
@@ -325,7 +356,6 @@ int main() {
   testParseAttributes();
   testParse();
   testConsumeComment();
-
   // testHttp();
   PRINT_TEST_RESULT();
 }

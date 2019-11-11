@@ -39,6 +39,8 @@ public:
 
   [[nodiscard]] bool containsAttribute(const std::string &key) const;
 
+  const std::string getValueByKey(const std::string &key) const;
+
 private:
   /// The tag name of current node; eg <div class="test">, tagName = "div"
 
@@ -213,6 +215,9 @@ public:
   template <typename Predicate>
   std::string consumeByPredicate(Predicate predicate);
 
+  /// Consume and return whatever is left on the queue
+  [[nodiscard]] std::string remainder();
+
   [[nodiscard]] const std::string &getData() const;
 
   [[nodiscard]] size_t getPos() const;
@@ -247,7 +252,7 @@ protected:
 class StructuralEvaluator : public Evaluator {
 public:
   explicit StructuralEvaluator(std::shared_ptr<Evaluator *> _eval)
-      : evaluator(_eval) {}
+      : evaluator(std::move(_eval)) {}
   virtual bool matches(const crawler::Node &root, const crawler::Node &node) {
     return false;
   }
@@ -278,6 +283,23 @@ class Or final : public CombiningEvaluator {
 public:
   explicit Or(const std::vector<Evaluator *> &evalutors);
   bool matches(const crawler::Node &root, const crawler::Node &node) override;
+};
+
+/// AttributeKeyValuePair Evaluator, select by attribute key or/and value.
+class AttributeKeyValuePair : public Evaluator {
+public:
+  AttributeKeyValuePair(const std::string &_key, const std::string &_value);
+  bool matches(const Node &root, const Node &node) override;
+
+protected:
+  std::string key;
+  std::string value;
+};
+
+class AttributeWithValue : public AttributeKeyValuePair {
+public:
+  AttributeWithValue(const std::string &key, const std::string &value);
+  bool matches(const Node &root, const Node &node) override;
 };
 
 /// Id Evaluator, means that selector will compare the id of an element with the
