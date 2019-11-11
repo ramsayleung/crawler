@@ -12,13 +12,14 @@
 
 namespace crawler {
 /**
- * String split function, use `delim` to split str, and then store the result into `cont`
+ * String split function, use `delim` to split str, and then store the result
+ * into `cont`
  * @tparam Container container to hold splited results.
  * @param str the string need to split.
  * @param cont container
  * @param delim delimeter
  */
-template<class Container>
+template <class Container>
 void split(const std::string &str, Container &cont, char delim = ' ') {
   std::size_t current, previous = 0;
   current = str.find(delim);
@@ -30,10 +31,11 @@ void split(const std::string &str, Container &cont, char delim = ' ') {
   cont.insert(str.substr(previous, current - previous));
 }
 
-size_t indexOf(const std::string &subString, const std::string &source) {
+inline size_t indexOf(const std::string &subString, const std::string &source) {
   auto foundIndex = source.find(subString);
   if (foundIndex == std::string::npos) {
-    throw std::runtime_error(std::string("Cound not find index of subString: ") + subString);
+    throw std::runtime_error(
+        std::string("Cound not find index of subString: ") + subString);
   } else {
     return foundIndex;
   }
@@ -54,5 +56,5 @@ inline bool startsWith(const std::string &prefix, const std::string &source,
 inline bool contains(const std::string &substring, const std::string &source) {
   return (source.find(substring) != std::string::npos);
 }
-}  // namespace crawler
-#endif  // DOUBANCRAWLER_STRINGS_H
+} // namespace crawler
+#endif // DOUBANCRAWLER_STRINGS_H

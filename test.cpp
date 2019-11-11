@@ -16,7 +16,7 @@ void printNode(const crawler::Node &result) {
   crawler::AttrMap attributes = result.getElementData().getAttributes();
   for (auto const &keyValuePair : attributes) {
     TRACE(("key: %s value: %s\n", keyValuePair.first.c_str(),
-        keyValuePair.second.c_str()));
+           keyValuePair.second.c_str()));
   }
 }
 
@@ -220,16 +220,16 @@ void testCombinatorSelect() {
   crawler::Node nodeWithChildClass = nodes.front();
   ASSERT_CSTRING_EQ(nodeWithChildClass.getElementData().id().c_str(), "child");
 
-   nodes = node.select("div.parent > div.child");
+  nodes = node.select("div.parent > div.child");
   ASSERT_UNSIGNED_LONG_EQ(nodes.size(), 1UL);
   crawler::Node childNodeWithChildClass = nodes.front();
-  ASSERT_CSTRING_EQ(childNodeWithChildClass.getElementData().id().c_str(), "child");
+  ASSERT_CSTRING_EQ(childNodeWithChildClass.getElementData().id().c_str(),
+                    "child");
 
   crawler::Nodes anotherNodes = node.select("div#main > div");
   ASSERT_TRUE(anotherNodes.size() == 1);
   crawler::Node divNode = anotherNodes.front();
   ASSERT_CSTRING_EQ(divNode.getElementData().id().c_str(), "parent");
-
 }
 
 void testChompBalanced() {
@@ -260,14 +260,48 @@ void testParseParentNode() {
   ASSERT_CSTRING_EQ(parentPtr->getElementData().id().c_str(), "parent");
 }
 
-void testConsumeToAny(){
+void testIndexOf() {
+  const std::string source = "Helloworld";
+  const std::string subString = "world";
+  size_t index = crawler::indexOf(subString, source);
+  ASSERT_UNSIGNED_LONG_EQ(5UL, index);
+}
+
+void testConsumeToAny() {
   crawler::TokenQueue tokenQueue("TITLE=foo");
-  const char *title = tokenQueue.consumeToAny(crawler::QueryParser::ATTRIBUTES).c_str();
-  ASSERT_CSTRING_EQ(title, "TITLE");
-};
+  std::string title = tokenQueue.consumeToAny(crawler::QueryParser::ATTRIBUTES);
+  ASSERT_CSTRING_EQ(title.c_str(), "TITLE");
+}
+
+void testSelectByAttributeKey() {
+  std::ifstream file("source/parseTest.html");
+  std::stringstream buffer;
+  buffer << file.rdbuf();
+  std::string source = buffer.str();
+  crawler::Node node = crawler::parse(source);
+  crawler::Nodes nodes = node.select("[method]");
+  ASSERT_UNSIGNED_LONG_EQ(1UL, nodes.size());
+  crawler::Node form = nodes.front();
+  ASSERT_CSTRING_EQ("form", form.getElementData().getTagName().c_str());
+}
+
+void testSelectByAttributeKeyStartWithPrefix() {
+  std::ifstream file("source/parseTest.html");
+  std::stringstream buffer;
+  buffer << file.rdbuf();
+  std::string source = buffer.str();
+  crawler::Node node = crawler::parse(source);
+  crawler::Nodes nodes = node.select("[^act]");
+  ASSERT_UNSIGNED_LONG_EQ(1UL, nodes.size());
+  crawler::Node form = nodes.front();
+  ASSERT_CSTRING_EQ("form", form.getElementData().getTagName().c_str());
+}
 
 int main() {
+  testSelectByAttributeKeyStartWithPrefix();
+  testSelectByAttributeKey();
   testConsumeToAny();
+  testIndexOf();
   testCombinatorSelect();
   testConsumeSubQuery();
   testParseParentNode();

@@ -23,7 +23,7 @@ using Nodes = std::vector<Node>;
 inline const static char ESC = '\\';
 
 class ElementData {
- public:
+public:
   ElementData() = default;
   ElementData(std::string tagName, AttrMap attributes)
       : tagName(std::move(tagName)), attributes(std::move(attributes)) {}
@@ -39,7 +39,7 @@ class ElementData {
 
   [[nodiscard]] bool containsAttribute(const std::string &key) const;
 
- private:
+private:
   /// The tag name of current node; eg <div class="test">, tagName = "div"
 
   std::string tagName;
@@ -53,7 +53,7 @@ using NodeData = std::variant<ElementData, std::string>;
 enum class NodeType { Element, Text };
 
 class Node {
- public:
+public:
   // data common to all nodes;
   explicit Node(const std::string &str)
       : nodeType(NodeType::Text), nodeData(str), parent(nullptr) {}
@@ -102,7 +102,7 @@ class Node {
   /// If current node is a text type.
   [[nodiscard]] bool isText() const;
 
- private:
+private:
   /// data common to all nodes;
   std::vector<Node> children;
 
@@ -115,8 +115,7 @@ class Node {
   std::shared_ptr<Node> parent;
 
   /// Get elements by call `predicate(node)` using BFS
-  template<class Predicate>
-  Nodes getElementsByPredicate(Predicate predicate) {
+  template <class Predicate> Nodes getElementsByPredicate(Predicate predicate) {
     Nodes elementList;
     std::queue<Node> queue;
     Node root = *this;
@@ -138,7 +137,7 @@ class Node {
 };
 
 class TokenQueue {
- public:
+public:
   explicit TokenQueue(std::string data);
 
   explicit TokenQueue(std::string data, size_t pos);
@@ -163,12 +162,30 @@ class TokenQueue {
   bool matchesWords();
 
   /// Tests if the next characters match any of the sequences
-  template<size_t N>
-  bool matchesAny(std::array<std::string, N> seq);
+  template <size_t N> bool matchesAny(std::array<std::string, N> seq) {
+    return std::any_of(seq.cbegin(), seq.cend(),
+                       [&](const std::string &s) { return matches(s); });
+  }
 
   /// Tests if the next characters match any of the sequences
-  template<size_t N>
-  bool matchesAny(std::array<char, N> seq);
+  template <size_t N> inline bool matchesAny(std::array<char, N> seq) {
+    if (eof()) {
+      return false;
+    }
+    return std::any_of(seq.cbegin(), seq.cend(),
+                       [this](const char c) { return data.c_str()[pos] == c; });
+  }
+
+  /// Consume to the first sequence provided
+  template <size_t N>
+  inline std::string consumeToAny(std::array<std::string, N> seq) {
+    size_t start = pos;
+    while (!eof() && !matchesAny(seq)) {
+      pos++;
+    }
+    size_t length = pos - start;
+    return data.substr(start, length);
+  }
 
   /// Consume a CSS identifier (ID or class) off the queue (letter, digit, -, _)
   std::string consumeCssIdentifier();
@@ -177,10 +194,6 @@ class TokenQueue {
   /// namespaces (or *| for wildcard namespace), to not conflict with :pseudo
   /// selects).
   std::string consumeElementSelector();
-
-  /// Consume to the first sequence provided
-  template<size_t N>
-  std::string consumeToAny(std::array<std::string, N> seq);
 
   /// Consume a sub query
   std::string consumeSubQuery();
@@ -197,14 +210,14 @@ class TokenQueue {
   char consume();
 
   /// Consume by predate
-  template<typename Predicate>
+  template <typename Predicate>
   std::string consumeByPredicate(Predicate predicate);
 
   [[nodiscard]] const std::string &getData() const;
 
   [[nodiscard]] size_t getPos() const;
 
- private:
+private:
   std::string data;
   size_t pos;
 };
@@ -213,56 +226,56 @@ class TokenQueue {
 /// Such as, Id Evaluator means the selector will compare the id of an element
 /// with the given id.
 class Evaluator {
- public:
+public:
   /// Derived class need to implement this function to show how to match.
   virtual bool matches(const Node &root, const Node &node) = 0;
 };
 
 /// Combining Evaluator.
 class CombiningEvaluator : public Evaluator {
- public:
+public:
   explicit CombiningEvaluator(std::vector<Evaluator *> evalutors);
   virtual bool matches(const crawler::Node &root, const crawler::Node &node) {
     return false;
   }
 
- protected:
+protected:
   std::vector<Evaluator *> evalutors;
 };
 
 /// Structural Evaluator
 class StructuralEvaluator : public Evaluator {
- public:
+public:
   explicit StructuralEvaluator(std::shared_ptr<Evaluator *> _eval)
       : evaluator(_eval) {}
   virtual bool matches(const crawler::Node &root, const crawler::Node &node) {
     return false;
   }
 
- protected:
+protected:
   std::shared_ptr<Evaluator *> evaluator;
 };
 
 class Parent : public StructuralEvaluator {
- public:
+public:
   explicit Parent(std::shared_ptr<Evaluator *> _evaluator);
   bool matches(const crawler::Node &root, const crawler::Node &node) override;
 };
 
 class ImmediateParent : public StructuralEvaluator {
- public:
+public:
   explicit ImmediateParent(std::shared_ptr<Evaluator *> _evaluator);
   bool matches(const crawler::Node &root, const crawler::Node &node) override;
 };
 
 class And final : public CombiningEvaluator {
- public:
+public:
   explicit And(const std::vector<Evaluator *> &evalutors);
   bool matches(const crawler::Node &root, const crawler::Node &node) override;
 };
 
 class Or final : public CombiningEvaluator {
- public:
+public:
   explicit Or(const std::vector<Evaluator *> &evalutors);
   bool matches(const crawler::Node &root, const crawler::Node &node) override;
 };
@@ -270,56 +283,58 @@ class Or final : public CombiningEvaluator {
 /// Id Evaluator, means that selector will compare the id of an element with the
 /// given one.
 class Id : public Evaluator {
- public:
+public:
   explicit Id(std::string id);
   bool matches(const crawler::Node &root, const crawler::Node &node) override;
 
- private:
+private:
   std::string id;
 };
 
 /// Class Evaluator, means that selector will compare the class name of an
 /// element with the given one.
 class Class : public Evaluator {
- public:
+public:
   explicit Class(std::string clazz);
   bool matches(const crawler::Node &root, const crawler::Node &node) override;
 
- private:
+private:
   std::string clazz;
 };
 
 /// Tag Evaluator, means that selector will compare the tag name of an element
 /// with the given one.
 class Tag : public Evaluator {
- public:
+public:
   explicit Tag(std::string tagName);
   bool matches(const crawler::Node &root, const crawler::Node &node) override;
 
- private:
+private:
   std::string tagName;
 };
 
 /// Evaluator for attribute name matching
 class Attribute : public Evaluator {
- public:
+public:
   explicit Attribute(std::string key);
   bool matches(const Node &root, const Node &node) override;
- private:
+
+private:
   std::string key;
 };
 
 /// Evaluator for attribute name prefix matching
 class AttributeKeyStartWithPrefix : public Evaluator {
- public:
+public:
   explicit AttributeKeyStartWithPrefix(std::string keyPrefix);
   bool matches(const Node &root, const Node &node) override;
- private:
+
+private:
   std::string keyPrefix;
 };
 
 class QueryParser {
- public:
+public:
   explicit QueryParser(const std::string &queryString);
 
   std::shared_ptr<Evaluator *> parse();
@@ -328,9 +343,10 @@ class QueryParser {
 
   inline static const std::array<std::string, 5> COMBINATORS = {",", ">", "+",
                                                                 "~", " "};
-  inline static const std::array<std::string, 6> ATTRIBUTES = {"=", "!=", "^=", "$=", "*=", "~="};
+  inline static const std::array<std::string, 6> ATTRIBUTES = {
+      "=", "!=", "^=", "$=", "*=", "~="};
 
- private:
+private:
   /// find elements.
   void findElements();
 
@@ -343,6 +359,7 @@ class QueryParser {
   /// Find element by tag name.
   void findByTag();
 
+  /// Find element by attribute.
   void findByAttribute();
 
   /// Combine child selector.
@@ -358,5 +375,4 @@ class QueryParser {
 };
 
 } // namespace crawler
-
 #endif // DOUBANCRAWLER_DOM_H

@@ -119,7 +119,7 @@ std::string crawler::TokenQueue::consumeCssIdentifier() {
   });
 }
 
-template<typename Predicate>
+template <typename Predicate>
 std::string crawler::TokenQueue::consumeByPredicate(Predicate predicate) {
   size_t start = pos;
   while (!eof() && (matchesWords() || predicate())) {
@@ -139,23 +139,6 @@ bool crawler::TokenQueue::matchesWords() {
   return !eof() && isalnum(data.c_str()[pos]);
 }
 
-template<size_t N>
-bool crawler::TokenQueue::matchesAny(std::array<char, N> seq) {
-  if (eof()) {
-    return false;
-  }
-  return std::any_of(seq.cbegin(), seq.cend(),
-                     [this](const char c) { return data.c_str()[pos] == c; });
-}
-template<size_t N>
-bool crawler::TokenQueue::matchesAny(std::array<std::string, N> seq) {
-  for (auto const &s : seq) {
-    if (matches(s)) {
-      return true;
-    }
-  }
-  return false;
-}
 std::string crawler::TokenQueue::chompBalanced(char open, char close) {
   int start = -1;
   int end = -1;
@@ -242,6 +225,8 @@ void crawler::QueryParser::findElements() {
     findByClass();
   } else if (tokenQueue.matchesWords()) {
     findByTag();
+  } else if (tokenQueue.matches("[")) {
+    findByAttribute();
   }
 }
 void crawler::QueryParser::findById() {
@@ -298,20 +283,27 @@ std::string crawler::TokenQueue::consumeSubQuery() {
   }
   return buffer.str();
 }
-template<size_t N>
-std::string crawler::TokenQueue::consumeToAny(std::array<std::string, N> seq) {
-  size_t start = pos;
-  while (!eof() && !matchesAny(seq)) {
-    pos++;
-  }
-  size_t length = pos - start;
-  return data.substr(start, pos);
-}
+// template <size_t N>
+// std::string crawler::TokenQueue::consumeToAny(std::array<std::string, N> seq)
+// {
+//}
 
 crawler::QueryParser::QueryParser(const std::string &queryString)
     : queryString(queryString), tokenQueue(queryString) {}
 void crawler::QueryParser::findByAttribute() {
   TokenQueue attributeQueue(tokenQueue.chompBalanced('[', ']'));
+  std::string key = attributeQueue.consumeToAny(ATTRIBUTES);
+  attributeQueue.consumeWhiteSpace();
+  if (attributeQueue.eof()) {
+    if (startsWith("^", key)) {
+      evals.emplace_back(
+          new AttributeKeyStartWithPrefix(key.substr(1, key.length() - 1)));
+    } else {
+      evals.emplace_back(new Attribute(key));
+    }
+  } else {
+    // TODO
+  }
 }
 
 crawler::Id::Id(std::string id) : id(std::move(id)) {}
@@ -352,7 +344,7 @@ crawler::Or::Or(const std::vector<Evaluator *> &evalutors)
     : CombiningEvaluator(evalutors) {}
 
 crawler::Parent::Parent(std::shared_ptr<Evaluator *> _eval)
-    : StructuralEvaluator(std::move(_eval)) {};
+    : StructuralEvaluator(std::move(_eval)){};
 
 bool crawler::Parent::matches(const crawler::Node &root,
                               const crawler::Node &node) {
@@ -375,7 +367,7 @@ bool crawler::Parent::matches(const crawler::Node &root,
 }
 
 crawler::ImmediateParent::ImmediateParent(std::shared_ptr<Evaluator *> _eval)
-    : StructuralEvaluator(_eval) {};
+    : StructuralEvaluator(std::move(_eval)){};
 
 bool crawler::ImmediateParent::matches(const crawler::Node &root,
                                        const crawler::Node &node) {
@@ -387,15 +379,19 @@ bool crawler::ImmediateParent::matches(const crawler::Node &root,
   return eval->matches(root, *parentPtr);
 }
 crawler::Attribute::Attribute(std::string key) : key(std::move(key)) {}
-bool crawler::Attribute::matches(const crawler::Node &root, const crawler::Node &node) {
+bool crawler::Attribute::matches(const crawler::Node &root,
+                                 const crawler::Node &node) {
   return node.getElementData().containsAttribute(key);
 }
-crawler::AttributeKeyStartWithPrefix::AttributeKeyStartWithPrefix(std::string keyPrefix)
+crawler::AttributeKeyStartWithPrefix::AttributeKeyStartWithPrefix(
+    std::string keyPrefix)
     : keyPrefix(std::move(keyPrefix)) {}
-bool crawler::AttributeKeyStartWithPrefix::matches(const crawler::Node &root, const crawler::Node &node) {
+bool crawler::AttributeKeyStartWithPrefix::matches(const crawler::Node &root,
+                                                   const crawler::Node &node) {
   const crawler::AttrMap attributes = node.getElementData().getAttributes();
-  return std::any_of(attributes.cbegin(), attributes.cend(), [&](auto const &element) {
-    std::string key = element.first;
-    return startsWith(keyPrefix, key);
-  });
+  return std::any_of(attributes.cbegin(), attributes.cend(),
+                     [&](auto const &element) {
+                       std::string key = element.first;
+                       return startsWith(keyPrefix, key);
+                     });
 }
