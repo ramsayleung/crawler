@@ -24,7 +24,7 @@
 1. 因为需要发送Http请求, 且C/C++并没有内置Http网络相关的库, 需要个类似Java的HttpClient/Python的Requests的组件 (什么, 用`socket`, 总不能每次手动调用`socket`发送Http协议的报文)
 2. 因为需要解析HTML, 且C/C+并没有内置Html相关的库, 需要个类似Java的Jsoup/Python的BeautifulSoup的组件 (什么? 你想用正则表达式, [正则表达式解析不了Html的.](https://stackoverflow.com/questions/1732348/regex-match-open-tags-except-xhtml-self-contained-tags))
 3. 因为需要保存处理好的数据, ~~所以我需要造个支持ACID的数据库~~, 需要个类似Java的Fastjson的组件, 可以将处理好的数据保存成json文件. (什么? 你想保存成text, 有点追求好不好)
-4. 因为需要尽量高效地进行调度, 所以需要个基于事件循环的调度器(应该是个类似名字的东东), 高效地进行`socket`连接的调度. (什么? 你想用循环, 那一次就只能处理一个请求了, 说好的要解决[c10m的决心呢?](http://highscalability.com/blog/2013/5/13/the-secret-to-10-million-concurrent-connections-the-kernel-i.html])
+4. 因为需要尽量高效地进行调度, 所以需要个基于事件循环的调度器(应该是个类似名字的东东), 高效地进行`socket`连接的调度. (什么? 你想用循环, 那一次就只能处理一个请求了, 说好的要解决[c10m的决心呢?](http://highscalability.com/blog/2013/5/13/the-secret-to-10-million-concurrent-connections-the-kernel-i.html])
 5. 最后还需要篇让人产生共鸣的文档.
 
 ## 实现
