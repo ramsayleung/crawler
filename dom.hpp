@@ -302,6 +302,12 @@ public:
   bool matches(const Node &root, const Node &node) override;
 };
 
+class AttributeWithValueNot: public AttributeKeyValuePair{
+ public:
+  AttributeWithValueNot(const std::string &key, const std::string &value);
+  bool matches(const Node &root, const Node &node) override;
+};
+
 /// Id Evaluator, means that selector will compare the id of an element with the
 /// given one.
 class Id : public Evaluator {

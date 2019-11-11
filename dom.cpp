@@ -314,6 +314,9 @@ void crawler::QueryParser::findByAttribute() {
     if (attributeQueue.matchesChomp("=")) {
       evals.emplace_back(
           new AttributeWithValue(key, attributeQueue.remainder()));
+    } else if (attributeQueue.matchesChomp("!=")) {
+      evals.emplace_back(
+          new AttributeWithValueNot(key, attributeQueue.remainder()));
     }
     // TODO
   }
@@ -431,4 +434,11 @@ bool crawler::AttributeWithValue::matches(const crawler::Node &root,
                                           const crawler::Node &node) {
   return node.getElementData().containsAttribute(this->key) &&
          (value == node.getElementData().getValueByKey(key));
+}
+crawler::AttributeWithValueNot::AttributeWithValueNot(const std::string &key,
+                                                      const std::string &value)
+    : AttributeKeyValuePair(key, value) {}
+bool crawler::AttributeWithValueNot::matches(const crawler::Node &root,
+                                             const crawler::Node &node) {
+  return value != node.getElementData().getValueByKey(key);
 }

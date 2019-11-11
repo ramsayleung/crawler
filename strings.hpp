@@ -11,14 +11,9 @@
 #include <string>
 
 namespace crawler {
-/**
- * String split function, use `delim` to split str, and then store the result
- * into `cont`
- * @tparam Container container to hold splited results.
- * @param str the string need to split.
- * @param cont container
- * @param delim delimeter
- */
+
+/// String split function, use `delim` to split str, and then store the result
+/// into `cout`
 template <class Container>
 void split(const std::string &str, Container &cont, char delim = ' ') {
   std::size_t current, previous = 0;

@@ -325,7 +325,17 @@ void testSelectByAttributeWithValue() {
   ASSERT_CSTRING_EQ("parent", div.getElementData().id().c_str());
 }
 
+void testSelectByAttributeWithValueNot() {
+  crawler::Node node =
+      crawler::parse(R"(<div name="ramsay"></div><div name="fancy"></div>)");
+  crawler::Nodes nodes = node.select("div[name!=fancy]");
+  ASSERT_UNSIGNED_LONG_EQ(1UL, nodes.size());
+  ASSERT_CSTRING_EQ(
+      "ramsay", nodes.front().getElementData().getValueByKey("name").c_str());
+}
+
 int main() {
+  testSelectByAttributeWithValueNot();
   testNormalize();
   testSelectByAttributeWithValue();
   testSelectByAttributeKeyStartWithPrefix();
