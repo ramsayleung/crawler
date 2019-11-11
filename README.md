@@ -29,7 +29,7 @@
 
 ## 实现
 
-### Html解析器[即将完工]
+### Html解析器[完工]
 
 主要的工作就是将html文件解析成DOM树, 然后提供对应的查找方法, 在DOM树上按Id(或者Tag name)查找指定的节点, 查找的方式多种多样, 如xpath, 或者css selector等.
 
@@ -148,8 +148,9 @@ crawler::Nodes crawler::Node::select(Evaluator *evaluator) {
 3. `.class`: 通过节点class名进行查询, 例如: `.main: <div class="main"></div>`
 4. `[attribute]`: 通过节点包含的属性名进行查询, 例如: `[href]: <a href="github.com">`
 5. `[^attr]`: 通过节点包含的属性名前缀进行查询, 例如: `[^act]: <form action="https://github.com/ramsayleung">`
-6. `[attr=value]`: 通过节点包含的属性名和属性值 进行查询, 例如: `[method="get"]: <form action="xxx" method="get">`
-7. `[attr^=value]`, `[attr$=value]`, `[attr*=value]`: 通过节点属性值的前缀, 后缀, 包含值进行查询, 例如: `[title^=ba]: <div title=bar />`, `[title$=im]: <div title=balim />`, `[attr*=i]: <div title=balim />`(施工中)
+6. `[attr=value]`: 通过节点包含的属性名和属性值进行查询, 例如: `[method="get"]: <form action="xxx" method="get">`
+7. `[attr!=value]`: 通过节点包含的属性值与不包含的属性名进行查询, 例如: `[name!=ramsay]: <div name="fancy"></>`
+8. `[attr^=value]`, `[attr$=value]`, `[attr*=value]`: 通过节点属性值的前缀, 后缀, 包含值进行查询, 例如: `[title^=ba]: <div title=bar />`, `[title$=im]: <div title=balim />`, `[attr*=i]: <div title=balim />`
 
 支持的组合查询语法列表:
 
