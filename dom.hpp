@@ -23,7 +23,7 @@ using Nodes = std::vector<Node>;
 inline const static char ESC = '\\';
 
 class ElementData {
-public:
+ public:
   ElementData() = default;
   ElementData(std::string tagName, AttrMap attributes)
       : tagName(std::move(tagName)), attributes(std::move(attributes)) {}
@@ -37,9 +37,9 @@ public:
 
   [[nodiscard]] const AttrMap &getAttributes() const { return attributes; }
 
-  [[nodiscard]] bool containsAttribute(const std::string& key) const;
+  [[nodiscard]] bool containsAttribute(const std::string &key) const;
 
-private:
+ private:
   /// The tag name of current node; eg <div class="test">, tagName = "div"
 
   std::string tagName;
@@ -53,22 +53,22 @@ using NodeData = std::variant<ElementData, std::string>;
 enum class NodeType { Element, Text };
 
 class Node {
-public:
+ public:
   // data common to all nodes;
   explicit Node(const std::string &str)
       : nodeType(NodeType::Text), nodeData(str), parent(nullptr) {}
 
   // data common to all nodes;
-  explicit Node(const std::string &str, std::shared_ptr<Node>  _parent)
+  explicit Node(const std::string &str, std::shared_ptr<Node> _parent)
       : nodeType(NodeType::Text), nodeData(str), parent(std::move(_parent)) {}
 
   explicit Node(const std::string &_name, const AttrMap &_attrMap,
                 std::vector<Node> _children,
-                const std::shared_ptr<Node>& _parent) {
+                const std::shared_ptr<Node> &_parent) {
     children = std::move(_children);
     parent = _parent;
     ElementData elementData(_name, _attrMap);
-    nodeType = NodeType ::Element;
+    nodeType = NodeType::Element;
     nodeData = elementData;
   }
 
@@ -102,7 +102,7 @@ public:
   /// If current node is a text type.
   [[nodiscard]] bool isText() const;
 
-private:
+ private:
   /// data common to all nodes;
   std::vector<Node> children;
 
@@ -115,7 +115,8 @@ private:
   std::shared_ptr<Node> parent;
 
   /// Get elements by call `predicate(node)` using BFS
-  template <class Predicate> Nodes getElementsByPredicate(Predicate predicate) {
+  template<class Predicate>
+  Nodes getElementsByPredicate(Predicate predicate) {
     Nodes elementList;
     std::queue<Node> queue;
     Node root = *this;
@@ -137,7 +138,7 @@ private:
 };
 
 class TokenQueue {
-public:
+ public:
   explicit TokenQueue(std::string data);
 
   explicit TokenQueue(std::string data, size_t pos);
@@ -162,10 +163,12 @@ public:
   bool matchesWords();
 
   /// Tests if the next characters match any of the sequences
-  template <size_t N> bool matchesAny(std::array<std::string, N> seq);
+  template<size_t N>
+  bool matchesAny(std::array<std::string, N> seq);
 
   /// Tests if the next characters match any of the sequences
-  template <size_t N> bool matchesAny(std::array<char, N> seq);
+  template<size_t N>
+  bool matchesAny(std::array<char, N> seq);
 
   /// Consume a CSS identifier (ID or class) off the queue (letter, digit, -, _)
   std::string consumeCssIdentifier();
@@ -175,6 +178,11 @@ public:
   /// selects).
   std::string consumeElementSelector();
 
+  /// Consume to the first sequence provided
+  template<size_t N>
+  std::string consumeToAny(std::array<std::string, N> seq);
+
+  /// Consume a sub query
   std::string consumeSubQuery();
 
   /// Pulls a balanced string off the queue. E.g. if queue is "(one (two) three)
@@ -189,14 +197,14 @@ public:
   char consume();
 
   /// Consume by predate
-  template <typename Predicate>
+  template<typename Predicate>
   std::string consumeByPredicate(Predicate predicate);
 
   [[nodiscard]] const std::string &getData() const;
 
   [[nodiscard]] size_t getPos() const;
 
-private:
+ private:
   std::string data;
   size_t pos;
 };
@@ -205,56 +213,56 @@ private:
 /// Such as, Id Evaluator means the selector will compare the id of an element
 /// with the given id.
 class Evaluator {
-public:
+ public:
   /// Derived class need to implement this function to show how to match.
   virtual bool matches(const Node &root, const Node &node) = 0;
 };
 
 /// Combining Evaluator.
 class CombiningEvaluator : public Evaluator {
-public:
+ public:
   explicit CombiningEvaluator(std::vector<Evaluator *> evalutors);
   virtual bool matches(const crawler::Node &root, const crawler::Node &node) {
     return false;
   }
 
-protected:
+ protected:
   std::vector<Evaluator *> evalutors;
 };
 
 /// Structural Evaluator
 class StructuralEvaluator : public Evaluator {
-public:
+ public:
   explicit StructuralEvaluator(std::shared_ptr<Evaluator *> _eval)
       : evaluator(_eval) {}
   virtual bool matches(const crawler::Node &root, const crawler::Node &node) {
     return false;
   }
 
-protected:
+ protected:
   std::shared_ptr<Evaluator *> evaluator;
 };
 
 class Parent : public StructuralEvaluator {
-public:
+ public:
   explicit Parent(std::shared_ptr<Evaluator *> _evaluator);
   bool matches(const crawler::Node &root, const crawler::Node &node) override;
 };
 
 class ImmediateParent : public StructuralEvaluator {
-public:
+ public:
   explicit ImmediateParent(std::shared_ptr<Evaluator *> _evaluator);
   bool matches(const crawler::Node &root, const crawler::Node &node) override;
 };
 
 class And final : public CombiningEvaluator {
-public:
+ public:
   explicit And(const std::vector<Evaluator *> &evalutors);
   bool matches(const crawler::Node &root, const crawler::Node &node) override;
 };
 
 class Or final : public CombiningEvaluator {
-public:
+ public:
   explicit Or(const std::vector<Evaluator *> &evalutors);
   bool matches(const crawler::Node &root, const crawler::Node &node) override;
 };
@@ -262,38 +270,38 @@ public:
 /// Id Evaluator, means that selector will compare the id of an element with the
 /// given one.
 class Id : public Evaluator {
-public:
+ public:
   explicit Id(std::string id);
   bool matches(const crawler::Node &root, const crawler::Node &node) override;
 
-private:
+ private:
   std::string id;
 };
 
 /// Class Evaluator, means that selector will compare the class name of an
 /// element with the given one.
 class Class : public Evaluator {
-public:
+ public:
   explicit Class(std::string clazz);
   bool matches(const crawler::Node &root, const crawler::Node &node) override;
 
-private:
+ private:
   std::string clazz;
 };
 
 /// Tag Evaluator, means that selector will compare the tag name of an element
 /// with the given one.
 class Tag : public Evaluator {
-public:
+ public:
   explicit Tag(std::string tagName);
   bool matches(const crawler::Node &root, const crawler::Node &node) override;
 
-private:
+ private:
   std::string tagName;
 };
 
 /// Evaluator for attribute name matching
-class Attribute: public Evaluator{
+class Attribute : public Evaluator {
  public:
   explicit Attribute(std::string key);
   bool matches(const Node &root, const Node &node) override;
@@ -301,8 +309,17 @@ class Attribute: public Evaluator{
   std::string key;
 };
 
+/// Evaluator for attribute name prefix matching
+class AttributeKeyStartWithPrefix : public Evaluator {
+ public:
+  explicit AttributeKeyStartWithPrefix(std::string keyPrefix);
+  bool matches(const Node &root, const Node &node) override;
+ private:
+  std::string keyPrefix;
+};
+
 class QueryParser {
-public:
+ public:
   explicit QueryParser(const std::string &queryString);
 
   std::shared_ptr<Evaluator *> parse();
@@ -311,7 +328,9 @@ public:
 
   inline static const std::array<std::string, 5> COMBINATORS = {",", ">", "+",
                                                                 "~", " "};
-private:
+  inline static const std::array<std::string, 6> ATTRIBUTES = {"=", "!=", "^=", "$=", "*=", "~="};
+
+ private:
   /// find elements.
   void findElements();
 

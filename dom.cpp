@@ -298,11 +298,20 @@ std::string crawler::TokenQueue::consumeSubQuery() {
   }
   return buffer.str();
 }
+template<size_t N>
+std::string crawler::TokenQueue::consumeToAny(std::array<std::string, N> seq) {
+  size_t start = pos;
+  while (!eof() && !matchesAny(seq)) {
+    pos++;
+  }
+  size_t length = pos - start;
+  return data.substr(start, pos);
+}
 
 crawler::QueryParser::QueryParser(const std::string &queryString)
     : queryString(queryString), tokenQueue(queryString) {}
 void crawler::QueryParser::findByAttribute() {
-  TokenQueue attributeQueue(tokenQueue.chompBalanced('[',']'));
+  TokenQueue attributeQueue(tokenQueue.chompBalanced('[', ']'));
 }
 
 crawler::Id::Id(std::string id) : id(std::move(id)) {}
@@ -343,12 +352,12 @@ crawler::Or::Or(const std::vector<Evaluator *> &evalutors)
     : CombiningEvaluator(evalutors) {}
 
 crawler::Parent::Parent(std::shared_ptr<Evaluator *> _eval)
-    : StructuralEvaluator(_eval) {};
+    : StructuralEvaluator(std::move(_eval)) {};
 
 bool crawler::Parent::matches(const crawler::Node &root,
                               const crawler::Node &node) {
   Evaluator *eval = *this->evaluator;
-  const std::shared_ptr<crawler::Node> parentPtr = node.getParent();
+  const std::shared_ptr<crawler::Node> &parentPtr = node.getParent();
   if (parentPtr == nullptr) {
     return false;
   }
@@ -380,4 +389,13 @@ bool crawler::ImmediateParent::matches(const crawler::Node &root,
 crawler::Attribute::Attribute(std::string key) : key(std::move(key)) {}
 bool crawler::Attribute::matches(const crawler::Node &root, const crawler::Node &node) {
   return node.getElementData().containsAttribute(key);
+}
+crawler::AttributeKeyStartWithPrefix::AttributeKeyStartWithPrefix(std::string keyPrefix)
+    : keyPrefix(std::move(keyPrefix)) {}
+bool crawler::AttributeKeyStartWithPrefix::matches(const crawler::Node &root, const crawler::Node &node) {
+  const crawler::AttrMap attributes = node.getElementData().getAttributes();
+  return std::any_of(attributes.cbegin(), attributes.cend(), [&](auto const &element) {
+    std::string key = element.first;
+    return startsWith(keyPrefix, key);
+  });
 }

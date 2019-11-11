@@ -260,7 +260,14 @@ void testParseParentNode() {
   ASSERT_CSTRING_EQ(parentPtr->getElementData().id().c_str(), "parent");
 }
 
+void testConsumeToAny(){
+  crawler::TokenQueue tokenQueue("TITLE=foo");
+  const char *title = tokenQueue.consumeToAny(crawler::QueryParser::ATTRIBUTES).c_str();
+  ASSERT_CSTRING_EQ(title, "TITLE");
+};
+
 int main() {
+  testConsumeToAny();
   testCombinatorSelect();
   testConsumeSubQuery();
   testParseParentNode();
