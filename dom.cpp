@@ -314,6 +314,18 @@ void crawler::QueryParser::findByAttribute() {
     if (attributeQueue.matchesChomp("=")) {
       evals.emplace_back(
           new AttributeWithValue(key, attributeQueue.remainder()));
+    } else if (attributeQueue.matchesChomp("!=")) {
+      evals.emplace_back(
+          new AttributeWithValueNot(key, attributeQueue.remainder()));
+    } else if (attributeQueue.matchesChomp("^=")) {
+      evals.emplace_back(
+          new AttributeValueStartWithPrefix(key, attributeQueue.remainder()));
+    } else if (attributeQueue.matchesChomp("$=")) {
+      evals.emplace_back(
+          new AttributeValueEndWithSuffix(key, attributeQueue.remainder()));
+    } else if (attributeQueue.matchesChomp("*=")) {
+      evals.emplace_back(new AttributeValueContainWithSubstring(
+          key, attributeQueue.remainder()));
     }
     // TODO
   }
@@ -431,4 +443,38 @@ bool crawler::AttributeWithValue::matches(const crawler::Node &root,
                                           const crawler::Node &node) {
   return node.getElementData().containsAttribute(this->key) &&
          (value == node.getElementData().getValueByKey(key));
+}
+crawler::AttributeWithValueNot::AttributeWithValueNot(const std::string &key,
+                                                      const std::string &value)
+    : AttributeKeyValuePair(key, value) {}
+bool crawler::AttributeWithValueNot::matches(const crawler::Node &root,
+                                             const crawler::Node &node) {
+  return value != node.getElementData().getValueByKey(key);
+}
+crawler::AttributeValueStartWithPrefix::AttributeValueStartWithPrefix(
+    const std::string &key, const std::string &value)
+    : AttributeKeyValuePair(key, value) {}
+bool crawler::AttributeValueStartWithPrefix::matches(
+    const crawler::Node &root, const crawler::Node &node) {
+  const std::string source = node.getElementData().getValueByKey(key);
+  return node.getElementData().containsAttribute(key) &&
+         startsWith(value, source);
+}
+crawler::AttributeValueEndWithSuffix::AttributeValueEndWithSuffix(
+    const std::string &key, const std::string &value)
+    : AttributeKeyValuePair(key, value) {}
+bool crawler::AttributeValueEndWithSuffix::matches(const crawler::Node &root,
+                                                   const crawler::Node &node) {
+  std::string source = node.getElementData().getValueByKey(key);
+  return node.getElementData().containsAttribute(key) &&
+         endsWith(value, source);
+}
+crawler::AttributeValueContainWithSubstring::AttributeValueContainWithSubstring(
+    const std::string &key, const std::string &value)
+    : AttributeKeyValuePair(key, value) {}
+bool crawler::AttributeValueContainWithSubstring::matches(
+    const crawler::Node &root, const crawler::Node &node) {
+  std::string source = node.getElementData().getValueByKey(key);
+  return node.getElementData().containsAttribute(key) &&
+         indexOf(value, source) != std::string::npos;
 }
