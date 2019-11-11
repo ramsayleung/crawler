@@ -37,6 +37,10 @@ public:
 
   [[nodiscard]] const AttrMap &getAttributes() const { return attributes; }
 
+  [[nodiscard]] bool containsAttribute(const std::string &key) const;
+
+  const std::string getValueByKey(const std::string &key) const;
+
 private:
   /// The tag name of current node; eg <div class="test">, tagName = "div"
 
@@ -57,16 +61,16 @@ public:
       : nodeType(NodeType::Text), nodeData(str), parent(nullptr) {}
 
   // data common to all nodes;
-  explicit Node(const std::string &str, const std::shared_ptr<Node> _parent)
-      : nodeType(NodeType::Text), nodeData(str), parent(_parent) {}
+  explicit Node(const std::string &str, std::shared_ptr<Node> _parent)
+      : nodeType(NodeType::Text), nodeData(str), parent(std::move(_parent)) {}
 
   explicit Node(const std::string &_name, const AttrMap &_attrMap,
                 std::vector<Node> _children,
-                const std::shared_ptr<Node> _parent) {
+                const std::shared_ptr<Node> &_parent) {
     children = std::move(_children);
     parent = _parent;
     ElementData elementData(_name, _attrMap);
-    nodeType = NodeType ::Element;
+    nodeType = NodeType::Element;
     nodeData = elementData;
   }
 
@@ -160,10 +164,30 @@ public:
   bool matchesWords();
 
   /// Tests if the next characters match any of the sequences
-  template <size_t N> bool matchesAny(std::array<std::string, N> seq);
+  template <size_t N> bool matchesAny(std::array<std::string, N> seq) {
+    return std::any_of(seq.cbegin(), seq.cend(),
+                       [&](const std::string &s) { return matches(s); });
+  }
 
   /// Tests if the next characters match any of the sequences
-  template <size_t N> bool matchesAny(std::array<char, N> seq);
+  template <size_t N> inline bool matchesAny(std::array<char, N> seq) {
+    if (eof()) {
+      return false;
+    }
+    return std::any_of(seq.cbegin(), seq.cend(),
+                       [this](const char c) { return data.c_str()[pos] == c; });
+  }
+
+  /// Consume to the first sequence provided
+  template <size_t N>
+  inline std::string consumeToAny(std::array<std::string, N> seq) {
+    size_t start = pos;
+    while (!eof() && !matchesAny(seq)) {
+      pos++;
+    }
+    size_t length = pos - start;
+    return data.substr(start, length);
+  }
 
   /// Consume a CSS identifier (ID or class) off the queue (letter, digit, -, _)
   std::string consumeCssIdentifier();
@@ -173,6 +197,7 @@ public:
   /// selects).
   std::string consumeElementSelector();
 
+  /// Consume a sub query
   std::string consumeSubQuery();
 
   /// Pulls a balanced string off the queue. E.g. if queue is "(one (two) three)
@@ -189,6 +214,9 @@ public:
   /// Consume by predate
   template <typename Predicate>
   std::string consumeByPredicate(Predicate predicate);
+
+  /// Consume and return whatever is left on the queue
+  [[nodiscard]] std::string remainder();
 
   [[nodiscard]] const std::string &getData() const;
 
@@ -224,7 +252,7 @@ protected:
 class StructuralEvaluator : public Evaluator {
 public:
   explicit StructuralEvaluator(std::shared_ptr<Evaluator *> _eval)
-      : evaluator(_eval) {}
+      : evaluator(std::move(_eval)) {}
   virtual bool matches(const crawler::Node &root, const crawler::Node &node) {
     return false;
   }
@@ -255,6 +283,23 @@ class Or final : public CombiningEvaluator {
 public:
   explicit Or(const std::vector<Evaluator *> &evalutors);
   bool matches(const crawler::Node &root, const crawler::Node &node) override;
+};
+
+/// AttributeKeyValuePair Evaluator, select by attribute key or/and value.
+class AttributeKeyValuePair : public Evaluator {
+public:
+  AttributeKeyValuePair(const std::string &_key, const std::string &_value);
+  bool matches(const Node &root, const Node &node) override;
+
+protected:
+  std::string key;
+  std::string value;
+};
+
+class AttributeWithValue : public AttributeKeyValuePair {
+public:
+  AttributeWithValue(const std::string &key, const std::string &value);
+  bool matches(const Node &root, const Node &node) override;
 };
 
 /// Id Evaluator, means that selector will compare the id of an element with the
@@ -290,6 +335,26 @@ private:
   std::string tagName;
 };
 
+/// Evaluator for attribute name matching
+class Attribute : public Evaluator {
+public:
+  explicit Attribute(std::string key);
+  bool matches(const Node &root, const Node &node) override;
+
+private:
+  std::string key;
+};
+
+/// Evaluator for attribute name prefix matching
+class AttributeKeyStartWithPrefix : public Evaluator {
+public:
+  explicit AttributeKeyStartWithPrefix(std::string keyPrefix);
+  bool matches(const Node &root, const Node &node) override;
+
+private:
+  std::string keyPrefix;
+};
+
 class QueryParser {
 public:
   explicit QueryParser(const std::string &queryString);
@@ -300,6 +365,9 @@ public:
 
   inline static const std::array<std::string, 5> COMBINATORS = {",", ">", "+",
                                                                 "~", " "};
+  inline static const std::array<std::string, 6> ATTRIBUTES = {
+      "=", "!=", "^=", "$=", "*=", "~="};
+
 private:
   /// find elements.
   void findElements();
@@ -313,6 +381,10 @@ private:
   /// Find element by tag name.
   void findByTag();
 
+  /// Find element by attribute.
+  void findByAttribute();
+
+  /// Combine child selector.
   void combinator(char combinator);
 
   /// member variables.
@@ -325,5 +397,4 @@ private:
 };
 
 } // namespace crawler
-
 #endif // DOUBANCRAWLER_DOM_H

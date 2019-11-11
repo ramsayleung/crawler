@@ -16,8 +16,7 @@ class Parser {
 public:
   Parser(size_t pos, std::string input);
   /// Parse a sequence of sibling nodes.
-  std::vector<crawler::Node>
-  parseNodes(const std::shared_ptr<crawler::Node> parent);
+  std::vector<crawler::Node> parseNodes(std::shared_ptr<crawler::Node> parent);
 
   /// Parse a sequence of sibling nodes.
   std::vector<crawler::Node> parseNodes();
@@ -26,13 +25,13 @@ public:
   crawler::Node parseNode();
 
   /// Parse a single node.
-  crawler::Node parseNode(const std::shared_ptr<crawler::Node> parent);
+  crawler::Node parseNode(std::shared_ptr<crawler::Node> parent);
 
   /// Parse a single element, including its open tag, content, and closing tag.
   crawler::Node parseElement();
 
   /// Parse a single element, including its open tag, content, and closing tag.
-  crawler::Node parseElement(const std::shared_ptr<crawler::Node> parent);
+  crawler::Node parseElement(std::shared_ptr<crawler::Node> parent);
 
   /// Parse a tag or attribute name.
   std::string parseTagName();
@@ -47,7 +46,7 @@ public:
   std::string parseAttributeValue();
 
   /// Parse a text node
-  crawler::Node parseText(const std::shared_ptr<crawler::Node> parent);
+  crawler::Node parseText(std::shared_ptr<crawler::Node> parent);
 
   /// Consume and discard zero or more whitespace characters
   void consumeWhitespace();
@@ -71,7 +70,7 @@ public:
   bool eof();
 
   /// Check if `currentTagName` is a self-closing tag or not.
-  bool isSelfClosingTag(const std::string &currentTagName) const;
+  [[nodiscard]] bool isSelfClosingTag(const std::string &currentTagName) const;
 
 private:
   size_t pos;
