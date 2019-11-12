@@ -25,7 +25,7 @@ crawler::Node crawler::Node::getElementById(const std::string &id) {
 }
 crawler::Nodes crawler::Node::select(Evaluator *evaluator) {
   return getElementsByPredicate([&evaluator, this](const Node &node) -> bool {
-    return evaluator->matches(*this, node);
+    return evaluator->matches(node);
   });
 }
 
@@ -320,38 +320,33 @@ void crawler::QueryParser::findByAttribute() {
 }
 
 crawler::Id::Id(std::string id) : id(std::move(id)) {}
-bool crawler::Id::matches(const crawler::Node &root,
-                          const crawler::Node &node) {
-  return id == node.getElementData().id();
+bool crawler::Id::matches(const Node &element) {
+  return id == element.getElementData().id();
 }
 crawler::Class::Class(std::string clazz) : clazz(std::move(clazz)) {}
-bool crawler::Class::matches(const crawler::Node &root,
-                             const crawler::Node &node) {
-  return clazz == node.getElementData().clazz();
+bool crawler::Class::matches(const Node &element) {
+  return clazz == element.getElementData().clazz();
 }
 crawler::Tag::Tag(std::string tagName) : tagName(std::move(tagName)) {}
-bool crawler::Tag::matches(const crawler::Node &root,
-                           const crawler::Node &node) {
-  return tagName == node.getElementData().getTagName();
+bool crawler::Tag::matches(const Node &element) {
+  return tagName == element.getElementData().getTagName();
 }
 crawler::CombiningEvaluator::CombiningEvaluator(
     std::vector<Evaluator *> evalutors)
     : evalutors(std::move(evalutors)) {}
 
-bool crawler::And::matches(const crawler::Node &root,
-                           const crawler::Node &node) {
+bool crawler::And::matches(const Node &element) {
   return std::all_of(
       this->evalutors.cbegin(), this->evalutors.cend(),
-      [&](auto const &eval) { return eval->matches(root, node); });
+      [&](auto const &eval) { return eval->matches(element); });
 }
 crawler::And::And(const std::vector<Evaluator *> &evalutors)
     : CombiningEvaluator(evalutors) {}
 
-bool crawler::Or::matches(const crawler::Node &root,
-                          const crawler::Node &node) {
+bool crawler::Or::matches(const Node &element) {
   return std::any_of(
       this->evalutors.cbegin(), this->evalutors.cend(),
-      [&](auto const &eval) { return eval->matches(root, node); });
+      [&](auto const &eval) { return eval->matches(element); });
 }
 crawler::Or::Or(const std::vector<Evaluator *> &evalutors)
     : CombiningEvaluator(evalutors) {}
@@ -359,16 +354,15 @@ crawler::Or::Or(const std::vector<Evaluator *> &evalutors)
 crawler::Parent::Parent(std::shared_ptr<Evaluator *> _eval)
     : StructuralEvaluator(std::move(_eval)){};
 
-bool crawler::Parent::matches(const crawler::Node &root,
-                              const crawler::Node &node) {
+bool crawler::Parent::matches(const Node &element) {
   Evaluator *eval = *this->evaluator;
-  const std::shared_ptr<crawler::Node> &parentPtr = node.getParent();
+  const std::shared_ptr<crawler::Node> &parentPtr = element.getParent();
   if (parentPtr == nullptr) {
     return false;
   }
   auto parent = *parentPtr;
   while (true) {
-    if (eval->matches(root, parent)) {
+    if (eval->matches(parent)) {
       return true;
     }
     if (parent.getParent() == nullptr) {
@@ -382,25 +376,22 @@ bool crawler::Parent::matches(const crawler::Node &root,
 crawler::ImmediateParent::ImmediateParent(std::shared_ptr<Evaluator *> _eval)
     : StructuralEvaluator(std::move(_eval)){};
 
-bool crawler::ImmediateParent::matches(const crawler::Node &root,
-                                       const crawler::Node &node) {
-  const std::shared_ptr<crawler::Node> &parentPtr = node.getParent();
+bool crawler::ImmediateParent::matches(const Node &element) {
+  const std::shared_ptr<crawler::Node> &parentPtr = element.getParent();
   if (parentPtr == nullptr) {
     return false;
   }
   Evaluator *eval = *this->evaluator;
-  return eval->matches(root, *parentPtr);
+  return eval->matches(*parentPtr);
 }
 crawler::Attribute::Attribute(std::string key) : key(std::move(key)) {}
-bool crawler::Attribute::matches(const crawler::Node &root,
-                                 const crawler::Node &node) {
-  return node.getElementData().containsAttribute(key);
+bool crawler::Attribute::matches(const Node &element) {
+  return element.getElementData().containsAttribute(key);
 }
 crawler::AttributeKeyStartWithPrefix::AttributeKeyStartWithPrefix(
     std::string keyPrefix)
     : keyPrefix(std::move(keyPrefix)) {}
-bool crawler::AttributeKeyStartWithPrefix::matches(const crawler::Node &root,
-                                                   const crawler::Node &node) {
+bool crawler::AttributeKeyStartWithPrefix::matches(const Node &node) {
   const crawler::AttrMap attributes = node.getElementData().getAttributes();
   return std::any_of(attributes.cbegin(), attributes.cend(),
                      [&](auto const &element) {
@@ -420,15 +411,13 @@ crawler::AttributeKeyValuePair::AttributeKeyValuePair(
   }
   value = tmpValue;
 }
-bool crawler::AttributeKeyValuePair::matches(const crawler::Node &root,
-                                             const crawler::Node &node) {
+bool crawler::AttributeKeyValuePair::matches(const Node &element) {
   return false;
 }
 crawler::AttributeWithValue::AttributeWithValue(const std::string &key,
                                                 const std::string &value)
     : AttributeKeyValuePair(key, value) {}
-bool crawler::AttributeWithValue::matches(const crawler::Node &root,
-                                          const crawler::Node &node) {
-  return node.getElementData().containsAttribute(this->key) &&
-         (value == node.getElementData().getValueByKey(key));
+bool crawler::AttributeWithValue::matches(const Node &element) {
+  return element.getElementData().containsAttribute(this->key) &&
+         (value == element.getElementData().getValueByKey(key));
 }

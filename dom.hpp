@@ -233,14 +233,14 @@ private:
 class Evaluator {
 public:
   /// Derived class need to implement this function to show how to match.
-  virtual bool matches(const Node &root, const Node &node) = 0;
+  virtual bool matches(const Node &element) = 0;
 };
 
 /// Combining Evaluator.
 class CombiningEvaluator : public Evaluator {
 public:
   explicit CombiningEvaluator(std::vector<Evaluator *> evalutors);
-  virtual bool matches(const crawler::Node &root, const crawler::Node &node) {
+  virtual bool matches(const Node &element) {
     return false;
   }
 
@@ -253,7 +253,7 @@ class StructuralEvaluator : public Evaluator {
 public:
   explicit StructuralEvaluator(std::shared_ptr<Evaluator *> _eval)
       : evaluator(std::move(_eval)) {}
-  virtual bool matches(const crawler::Node &root, const crawler::Node &node) {
+  virtual bool matches(const Node &element) {
     return false;
   }
 
@@ -264,32 +264,32 @@ protected:
 class Parent : public StructuralEvaluator {
 public:
   explicit Parent(std::shared_ptr<Evaluator *> _evaluator);
-  bool matches(const crawler::Node &root, const crawler::Node &node) override;
+  bool matches(const Node &element) override;
 };
 
 class ImmediateParent : public StructuralEvaluator {
 public:
   explicit ImmediateParent(std::shared_ptr<Evaluator *> _evaluator);
-  bool matches(const crawler::Node &root, const crawler::Node &node) override;
+  bool matches(const Node &element) override;
 };
 
 class And final : public CombiningEvaluator {
 public:
   explicit And(const std::vector<Evaluator *> &evalutors);
-  bool matches(const crawler::Node &root, const crawler::Node &node) override;
+  bool matches(const Node &element) override;
 };
 
 class Or final : public CombiningEvaluator {
 public:
   explicit Or(const std::vector<Evaluator *> &evalutors);
-  bool matches(const crawler::Node &root, const crawler::Node &node) override;
+  bool matches(const Node &element) override;
 };
 
 /// AttributeKeyValuePair Evaluator, select by attribute key or/and value.
 class AttributeKeyValuePair : public Evaluator {
 public:
   AttributeKeyValuePair(const std::string &_key, const std::string &_value);
-  bool matches(const Node &root, const Node &node) override;
+  bool matches(const Node &element) override;
 
 protected:
   std::string key;
@@ -299,7 +299,7 @@ protected:
 class AttributeWithValue : public AttributeKeyValuePair {
 public:
   AttributeWithValue(const std::string &key, const std::string &value);
-  bool matches(const Node &root, const Node &node) override;
+  bool matches(const Node &element) override;
 };
 
 /// Id Evaluator, means that selector will compare the id of an element with the
@@ -307,7 +307,7 @@ public:
 class Id : public Evaluator {
 public:
   explicit Id(std::string id);
-  bool matches(const crawler::Node &root, const crawler::Node &node) override;
+  bool matches(const Node &element) override;
 
 private:
   std::string id;
@@ -318,7 +318,7 @@ private:
 class Class : public Evaluator {
 public:
   explicit Class(std::string clazz);
-  bool matches(const crawler::Node &root, const crawler::Node &node) override;
+  bool matches(const Node &element) override;
 
 private:
   std::string clazz;
@@ -329,7 +329,7 @@ private:
 class Tag : public Evaluator {
 public:
   explicit Tag(std::string tagName);
-  bool matches(const crawler::Node &root, const crawler::Node &node) override;
+  bool matches(const Node &element) override;
 
 private:
   std::string tagName;
@@ -339,7 +339,7 @@ private:
 class Attribute : public Evaluator {
 public:
   explicit Attribute(std::string key);
-  bool matches(const Node &root, const Node &node) override;
+  bool matches(const Node &element) override;
 
 private:
   std::string key;
@@ -349,7 +349,7 @@ private:
 class AttributeKeyStartWithPrefix : public Evaluator {
 public:
   explicit AttributeKeyStartWithPrefix(std::string keyPrefix);
-  bool matches(const Node &root, const Node &node) override;
+  bool matches(const Node &element) override;
 
 private:
   std::string keyPrefix;
