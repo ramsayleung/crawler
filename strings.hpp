@@ -11,14 +11,9 @@
 #include <string>
 
 namespace crawler {
-/**
- * String split function, use `delim` to split str, and then store the result
- * into `cont`
- * @tparam Container container to hold splited results.
- * @param str the string need to split.
- * @param cont container
- * @param delim delimeter
- */
+
+/// String split function, use `delim` to split str, and then store the result
+/// into `cout`
 template <class Container>
 void split(const std::string &str, Container &cont, char delim = ' ') {
   std::size_t current, previous = 0;
@@ -33,14 +28,8 @@ void split(const std::string &str, Container &cont, char delim = ' ') {
 
 /// Find index of subString in `source`.
 inline size_t indexOf(const std::string &subString, const std::string &source) {
-  auto foundIndex = source.find(subString);
-  if (foundIndex == std::string::npos) {
-    throw std::runtime_error(
-        std::string("Cound not find index of subString: ") + subString);
-  } else {
-    return foundIndex;
-  }
-}
+  return source.find(subString);
+} // namespace crawler
 
 /// Convert `input` to lower case and trim it.
 inline std::string normalize(const std::string &input) {
