@@ -24,7 +24,7 @@ crawler::Node crawler::Node::getElementById(const std::string &id) {
   return elements[0];
 }
 crawler::Nodes crawler::Node::select(Evaluator *evaluator) {
-  return getElementsByPredicate([&evaluator, this](const Node &node) -> bool {
+  return getElementsByPredicate([&evaluator](const Node &node) -> bool {
     return evaluator->matches(node);
   });
 }
