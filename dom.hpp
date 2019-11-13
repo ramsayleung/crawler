@@ -240,9 +240,7 @@ public:
 class CombiningEvaluator : public Evaluator {
 public:
   explicit CombiningEvaluator(std::vector<Evaluator *> evalutors);
-  virtual bool matches(const Node &element) {
-    return false;
-  }
+  virtual bool matches(const Node &element) { return false; }
 
 protected:
   std::vector<Evaluator *> evalutors;
@@ -253,9 +251,7 @@ class StructuralEvaluator : public Evaluator {
 public:
   explicit StructuralEvaluator(std::shared_ptr<Evaluator *> _eval)
       : evaluator(std::move(_eval)) {}
-  virtual bool matches(const Node &element) {
-    return false;
-  }
+  virtual bool matches(const Node &element) { return false; }
 
 protected:
   std::shared_ptr<Evaluator *> evaluator;
@@ -296,45 +292,45 @@ protected:
   std::string value;
 };
 
-/// AttributeWithValue Evaluator, means that select by value matches the given `value`.
+/// AttributeWithValue Evaluator, means that select by value matches the given
+/// `value`.
 class AttributeWithValue : public AttributeKeyValuePair {
 public:
   AttributeWithValue(const std::string &key, const std::string &value);
   bool matches(const Node &element) override;
 };
 
-/// AttributeWithValueNot Evaluator, means select by value doesn't start with given `value`
-class AttributeWithValueNot: public AttributeKeyValuePair{
- public:
+/// AttributeWithValueNot Evaluator, means select by value doesn't start with
+/// given `value`
+class AttributeWithValueNot : public AttributeKeyValuePair {
+public:
   AttributeWithValueNot(const std::string &key, const std::string &value);
-  bool matches(const Node &root, const Node &node) override;
+  bool matches(const Node &root) override;
 };
 
 /// Evaluator for attribute key/value matching (value prefix)
-class AttributeValueStartWithPrefix: public AttributeKeyValuePair{
+class AttributeValueStartWithPrefix : public AttributeKeyValuePair {
 public:
   AttributeValueStartWithPrefix(const std::string &key,
                                 const std::string &value);
-  bool matches(const Node &root, const Node &node) override;
+  bool matches(const Node &root) override;
 };
 
-
 /// Evaluator for attribute key/value matching (value suffix)
-class AttributeValueEndWithSuffix: public AttributeKeyValuePair{
+class AttributeValueEndWithSuffix : public AttributeKeyValuePair {
 public:
   AttributeValueEndWithSuffix(const std::string &key, const std::string &value);
-  bool matches(const Node &root, const Node &node) override;
+  bool matches(const Node &root) override;
 };
 
 /// Evaluator for attribute key/value matching (value containing)
 
-class AttributeValueContainWithSubstring: public AttributeKeyValuePair{
+class AttributeValueContainWithSubstring : public AttributeKeyValuePair {
 public:
   AttributeValueContainWithSubstring(const std::string &key,
                                      const std::string &value);
-  bool matches(const Node &root, const Node &node) override;
+  bool matches(const Node &root) override;
 };
-
 
 /// Id Evaluator, means that selector will compare the id of an element with the
 /// given one.

@@ -128,8 +128,9 @@ std::vector<crawler::Node> crawler::Parser::parseNodes() {
 }
 
 std::vector<crawler::Node>
-crawler::Parser::parseNodes(const std::shared_ptr<crawler::Node> parent) {
+crawler::Parser::parseNodes(const std::shared_ptr<crawler::Node>&parent) {
   consumeComment();
+  consumeDoctype();
   std::vector<crawler::Node> nodes;
   while (true) {
     consumeWhitespace();
@@ -144,7 +145,7 @@ crawler::Parser::parseNodes(const std::shared_ptr<crawler::Node> parent) {
 crawler::Node crawler::Parser::parseNode() { return parseNode(nullptr); }
 
 crawler::Node
-crawler::Parser::parseNode(const std::shared_ptr<crawler::Node> parent) {
+crawler::Parser::parseNode(const std::shared_ptr<crawler::Node> &parent) {
   if (nextChar() == '<') {
     return parseElement(parent);
   } else {
