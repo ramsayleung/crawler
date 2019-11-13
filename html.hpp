@@ -34,6 +34,13 @@ public:
   /// Parse a single element, including its open tag, content, and closing tag.
   crawler::Node parseElement(std::shared_ptr<crawler::Node> parent);
 
+private:
+  size_t pos;
+  std::string input;
+  inline static const std::set<std::string> SELF_CLOSING_TAGS = {
+      "area",   "base", "br",       "col",  "embed", "hr",     "img",   "input",
+      "keygen", "link", "menuitem", "meta", "param", "source", "track", "wbr"};
+
   /// Parse a tag or attribute name.
   std::string parseTagName();
 
@@ -75,13 +82,6 @@ public:
 
   /// Check if `currentTagName` is a self-closing tag or not.
   [[nodiscard]] bool isSelfClosingTag(const std::string &currentTagName) const;
-
-private:
-  size_t pos;
-  std::string input;
-  inline static const std::set<std::string> SELF_CLOSING_TAGS = {
-      "area",   "base", "br",       "col",  "embed", "hr",     "img",   "input",
-      "keygen", "link", "menuitem", "meta", "param", "source", "track", "wbr"};
 };
 
 crawler::Node parse(const std::string &source);

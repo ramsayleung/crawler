@@ -138,7 +138,7 @@ std::vector<crawler::Node> crawler::Parser::parseNodes() {
 }
 
 std::vector<crawler::Node>
-crawler::Parser::parseNodes(const std::shared_ptr<crawler::Node>&parent) {
+crawler::Parser::parseNodes(const std::shared_ptr<crawler::Node> &parent) {
   consumeComment();
   consumeDoctype();
   std::vector<crawler::Node> nodes;
