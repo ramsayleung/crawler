@@ -39,7 +39,7 @@ public:
 
   [[nodiscard]] bool containsAttribute(const std::string &key) const;
 
-  const std::string getValueByKey(const std::string &key) const;
+  [[nodiscard]] const std::string getValueByKey(const std::string &key) const;
 
 private:
   /// The tag name of current node; eg <div class="test">, tagName = "div"

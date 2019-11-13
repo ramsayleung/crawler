@@ -54,8 +54,18 @@ void crawler::Parser::consumeComment() {
   std::regex_replace(input, pattern, emptyString);
 }
 
+void Parser::consumeDoctype() {
+  std::string doctypeIdentifier("<!doctype");
+  if (!crawler::containsIgnoreCase(doctypeIdentifier, input)) {
+    return;
+  }
+  std::string emptyString;
+  std::regex pattern(R"(<!.*?>)");
+  input = std::regex_replace(input, pattern, emptyString);
+}
+
 crawler::Node
-crawler::Parser::parseText(const std::shared_ptr<crawler::Node> parent) {
+crawler::Parser::parseText(const std::shared_ptr<crawler::Node> &parent) {
   return crawler::Node(consumeWhile([](char c) -> bool { return c != '<'; }));
 }
 

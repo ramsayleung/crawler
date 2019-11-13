@@ -114,6 +114,8 @@ void testConsumeComment() {
   std::string result = std::regex_replace(buffer.str(), pattern, emptyString);
   std::string commentDescriptor("<!--");
   ASSERT_TRUE(!crawler::contains(commentDescriptor, result));
+  crawler::Node node = crawler::parse(buffer.str());
+  printNode(node);
 }
 
 void testHttp() {
@@ -358,7 +360,21 @@ void testSelectByAttributeValueContainsSubString() {
   ASSERT_CSTRING_EQ("foo", nodes.front().getElementData().id().c_str());
 }
 
+void testContainsIgnoreCase() {
+  ASSERT_TRUE(crawler::containsIgnoreCase("Doctype", "DOCTYPE"));
+}
+
+void testParseDoctype() {
+  std::ifstream file("source/commentTest.html");
+  std::stringstream buffer;
+  buffer << file.rdbuf();
+  crawler::Node node = crawler::parse(buffer.str());
+  printNode(node);
+}
+
 int main() {
+  testParseDoctype();
+  testContainsIgnoreCase();
   testSelectByAttributeValueContainsSubString();
   testSelectByAttributeValueEndWithSuffix();
   testSelectByAttributeValueStartWithPrefix();

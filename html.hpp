@@ -55,6 +55,9 @@ public:
   /// Consume and discard zero or more comment
   void consumeComment();
 
+  /// Consume and discard doctype.
+  void consumeDoctype();
+
   /// Consume character until `test` return false.
   template <class Predicate> std::string consumeWhile(Predicate predicate);
 

@@ -62,5 +62,12 @@ inline bool startsWith(const std::string &prefix, const std::string &source,
 inline bool contains(const std::string &substring, const std::string &source) {
   return (source.find(substring) != std::string::npos);
 }
+
+/// Compares this `source` to another `target`, ignoring case considerations.
+inline bool containsIgnoreCase(const std::string &source,
+                               const std::string &target) {
+  return contains(normalize(source), normalize(target));
+}
+
 } // namespace crawler
 #endif // DOUBANCRAWLER_STRINGS_H
