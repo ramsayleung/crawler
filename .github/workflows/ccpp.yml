@@ -9,10 +9,10 @@ jobs:
     
     steps:
     - uses: actions/checkout@v1
-    - name: configure
-      run: ./configure
+    - name: cmake configure
+      run: cmake . -DCMAKE_BUILD_TYPE=Debug
     - name: make
-      run: make
+      run: make -j4
     - name: make check
       run: make check
     - name: make distcheck
