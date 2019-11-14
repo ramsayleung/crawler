@@ -61,7 +61,7 @@ Html解析的工作主要是由`html`和`dom`两个文件负责, `html`负责相
 
 解析的顺序如下图, 因为html tag是成对存在的(如: `<div></div>`), 所以`div#parent->div#child`有④和⑤, 分别代表解析opening tag `<div>`和解析closing tag`</div>`:
 
-![parse flow](doc/parse_flow.svg)
+![parse flow](doc/parse_flow.png)
 
 上文假设了html tag是成对存在的, 但是事实并非如此, html不像xml那样严格匹配opening-tag和closing-tag的, 会有类似`<input>`或者`<meta>`这样 的self-closing tag. 这相当于是和特殊的节点, 它们不会存在子节点, 所以遇到 self-closing tag节点的时候直接返回. 然后就会引申出另外一个问题, 如何判断某个tag是否是self-closing tag呢? 思虑下来, 解决方案有两个:
 
