@@ -240,7 +240,6 @@ public:
 class CombiningEvaluator : public Evaluator {
 public:
   explicit CombiningEvaluator(std::vector<Evaluator *> evalutors);
-  virtual bool matches(const Node &element) { return false; }
 
 protected:
   std::vector<Evaluator *> evalutors;
@@ -251,7 +250,6 @@ class StructuralEvaluator : public Evaluator {
 public:
   explicit StructuralEvaluator(std::shared_ptr<Evaluator *> _eval)
       : evaluator(std::move(_eval)) {}
-  virtual bool matches(const Node &element) { return false; }
 
 protected:
   std::shared_ptr<Evaluator *> evaluator;
@@ -285,7 +283,6 @@ public:
 class AttributeKeyValuePair : public Evaluator {
 public:
   AttributeKeyValuePair(const std::string &_key, const std::string &_value);
-  bool matches(const Node &element) override;
 
 protected:
   std::string key;

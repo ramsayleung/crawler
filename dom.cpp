@@ -421,9 +421,6 @@ crawler::AttributeKeyValuePair::AttributeKeyValuePair(
   }
   value = tmpValue;
 }
-bool crawler::AttributeKeyValuePair::matches(const Node &element) {
-  return false;
-}
 crawler::AttributeWithValue::AttributeWithValue(const std::string &key,
                                                 const std::string &value)
     : AttributeKeyValuePair(key, value) {}
