@@ -66,7 +66,8 @@ void Parser::consumeDoctype() {
 
 crawler::Node
 crawler::Parser::parseText(const std::shared_ptr<crawler::Node> &parent) {
-  return crawler::Node(consumeWhile([](char c) -> bool { return c != '<'; }));
+  return crawler::Node(consumeWhile([](char c) -> bool { return c != '<'; }),
+                       parent);
 }
 
 std::string crawler::Parser::parseAttributeValue() {

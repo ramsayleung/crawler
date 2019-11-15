@@ -19,9 +19,6 @@ class Node;
 using AttrMap = std::map<std::string, std::string>;
 using Nodes = std::vector<Node>;
 
-/// escape char for chomp balanced.
-inline const static char ESC = '\\';
-
 class ElementData {
 public:
   ElementData() = default;
@@ -225,6 +222,9 @@ public:
 private:
   std::string data;
   size_t pos;
+
+  /// escape char for chomp balanced.
+  inline const static char ESC = '\\';
 };
 
 /// Evaluator that an element need to match the selector
