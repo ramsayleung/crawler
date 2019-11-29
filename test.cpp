@@ -5,6 +5,7 @@
 #include "dom.hpp"
 #include "html.hpp"
 #include "http.hpp"
+#include "json.hpp"
 #include "utils.hpp"
 
 #include <fstream>
@@ -372,7 +373,15 @@ void testParseDoctype() {
   printNode(node);
 }
 
+void testJsonParseNull() {
+  std::string json(" null");
+  crawler::JsonParser parser(json);
+  crawler::JsonValue jsonValue = parser.parse();
+  ASSERT_TRUE(jsonValue.getType() == crawler::JsonType::_NULL);
+}
+
 int main() {
+  testJsonParseNull();
   testParseDoctype();
   testContainsIgnoreCase();
   testSelectByAttributeValueContainsSubString();
