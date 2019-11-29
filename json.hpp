@@ -3,6 +3,8 @@
 #include <cassert>
 #include <exception>
 #include <string>
+#include <variant>
+#include "strings.hpp"
 
 namespace crawler {
 enum class JsonType { _NULL, FALSE, TRUE, NUMBER, STRING, ARRAY, OBJECT };
@@ -16,14 +18,25 @@ class Context {
 private:
   std::string jsonStr;
 };
+using JsonData = std::variant<double, bool>;
+
 class JsonValue {
 public:
   explicit JsonValue(JsonType type = JsonType::_NULL);
+
+  explicit JsonValue(JsonType jsonType, JsonData jsonData);
+
   [[nodiscard]] JsonType getType() const;
 
   void setType(JsonType _type);
 
+  void setData(const JsonData &_data);
+
+  double getNumber();
+
 private:
+  JsonData data;
+
   JsonType type;
 };
 
@@ -54,6 +67,9 @@ private:
   /// Parse "false"
   void parseFalse();
 
+  /// Parse number
+  void parseNumber();
+
   /// Parse value
   void parseValue();
 
@@ -62,6 +78,11 @@ private:
 
   /// Check if end of line.
   bool eof();
+
+  /// num >=1 and num <= 9
+  bool isDigit1To9(char digit);
+
+  std::string remainingData();
 
   JsonValue jsonValue;
 

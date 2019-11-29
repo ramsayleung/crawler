@@ -396,15 +396,83 @@ void testJsonParseBoolean() {
 
 void testJsonParseError() {
   crawler::JsonParser trueParser(" true xx");
+  crawler::JsonParser numberParser(" 0 12");
   try {
     trueParser.parse();
+
+    // it should be unreachable, otherwise, it should failed.
+    ASSERT_TRUE(0);
+  } catch (const std::runtime_error &error) {
+    ASSERT_CSTRING_EQ("PARSE_ROOT_NOT_SINGULAR", error.what());
+  }
+  try {
+    numberParser.parse();
+    ASSERT_TRUE(0);
   } catch (const std::runtime_error &error) {
     ASSERT_CSTRING_EQ("PARSE_ROOT_NOT_SINGULAR", error.what());
   }
 }
+
+void testJsonParseNumber(double expect, const std::string &json) {
+  crawler::JsonParser trueParser(json);
+  crawler::JsonValue jsonValue = trueParser.parse();
+  ASSERT_TRUE(jsonValue.getType() == crawler::JsonType::NUMBER);
+  ASSERT_DOUBLE_EQ(expect, jsonValue.getNumber());
+}
+
+void testJsonParseNumberError(const std::string &error,
+                              const std::string &json) {
+
+  crawler::JsonParser parser(json);
+
+  try {
+    parser.parse();
+    // unreachable line.
+    ASSERT_TRUE(0);
+  } catch (const std::runtime_error &ex) {
+    ASSERT_CSTRING_EQ(error.c_str(), ex.what());
+  }
+}
+
+void testJsonParseNumberError() {
+  testJsonParseNumberError("PARSE_INVALID_VALUE", "+0");
+  testJsonParseNumberError("PARSE_INVALID_VALUE", "+1");
+  /* at least one digit before '.' */
+  testJsonParseNumberError("PARSE_INVALID_VALUE", ".123");
+  /* at least one digit after '.' */
+  testJsonParseNumberError("PARSE_INVALID_VALUE", "1.");
+  testJsonParseNumberError("PARSE_INVALID_VALUE", "INF");
+  testJsonParseNumberError("PARSE_INVALID_VALUE", "inf");
+  testJsonParseNumberError("PARSE_INVALID_VALUE", "NAN");
+  testJsonParseNumberError("PARSE_INVALID_VALUE", "nan");
+}
+
+void testJsonParseNumber() {
+  testJsonParseNumber(0.0, "0");
+  testJsonParseNumber(0.0, "-0");
+  testJsonParseNumber(0.0, "-0.0");
+  testJsonParseNumber(1.0, "1");
+  testJsonParseNumber(-1.0, "-1");
+  testJsonParseNumber(1.5, "1.5");
+  testJsonParseNumber(-1.5, "-1.5");
+  testJsonParseNumber(3.1416, "3.1416");
+  testJsonParseNumber(1E10, "1E10");
+  testJsonParseNumber(1e10, "1e10");
+  testJsonParseNumber(1E+10, "1E+10");
+  testJsonParseNumber(1E-10, "1E-10");
+  testJsonParseNumber(-1E10, "-1E10");
+  testJsonParseNumber(-1e10, "-1e10");
+  testJsonParseNumber(-1E+10, "-1E+10");
+  testJsonParseNumber(-1E-10, "-1E-10");
+  testJsonParseNumber(1.234E+10, "1.234E+10");
+  testJsonParseNumber(1.234E-10, "1.234E-10");
+}
+
 /// JSON End
 
 int main() {
+  testJsonParseNumber();
+  testJsonParseNumberError();
   testJsonParseError();
   testJsonParseBoolean();
   testJsonParseNull();

@@ -35,6 +35,8 @@ static int test_pass = 0;
 
 #define ASSERT_UNSIGNED_LONG_EQ(expect, actual) EXPECT_EQ_BASE((expect) == (actual), expect, actual, "%lu")
 
+#define ASSERT_DOUBLE_EQ(expect, actual) EXPECT_EQ_BASE((expect) == (actual), expect, actual, "%f")
+
 #define ASSERT_TRUE(actual) EXPECT_EQ_BASE(true == (actual), true, actual, "%d")
 
 #define ASSERT_CSTRING_EQ(expect, actual) EXPECT_EQ_BASE(strcmp((expect),(actual))==0, expect, actual, "%s")
