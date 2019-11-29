@@ -1,12 +1,14 @@
 #include "json.hpp"
 
-#include <cassert>
-#include <exception>
 #include <utility>
 
 crawler::JsonValue crawler::JsonParser::parse() {
   parseWhitespace();
   parseValue();
+  parseWhitespace();
+  if (!eof()) {
+    throw std::runtime_error("PARSE_ROOT_NOT_SINGULAR");
+  }
   return this->jsonValue;
 }
 
@@ -23,14 +25,27 @@ crawler::JsonParser::JsonParser(std::string json)
 
 const std::string &crawler::JsonParser::getJson() const { return json; }
 
+void crawler::JsonParser::parseTrue() {
+  parseLiteralness(TRUE, JsonType::TRUE);
+}
+
+void crawler::JsonParser::parseFalse() {
+  parseLiteralness(FALSE, JsonType::FALSE);
+}
+
 void crawler::JsonParser::parseNull() {
-  assert(currentChar() == 'n');
-  const char *data = json.c_str();
-  if (data[pos + 1] != 'u' || data[pos + 2] != 'l' || data[pos + 3] != 'l') {
+  parseLiteralness(_NULL, JsonType::_NULL);
+}
+
+void crawler::JsonParser::parseLiteralness(const std::string &literal,
+                                           crawler::JsonType jsonType) {
+  size_t literalSize = literal.size();
+  std::string compareData = json.substr(pos, literalSize);
+  if (literal != compareData) {
     throw std::runtime_error("PARSE_INVALID_VALUE");
   }
-  pos += 4;
-  this->jsonValue.setType(JsonType::_NULL);
+  pos += literalSize;
+  this->jsonValue.setType(jsonType);
 }
 
 char crawler::JsonParser::currentChar() { return json.c_str()[pos]; }
@@ -39,6 +54,10 @@ void crawler::JsonParser::parseValue() {
   switch (currentChar()) {
   case 'n':
     return parseNull();
+  case 't':
+    return parseTrue();
+  case 'f':
+    return parseFalse();
   case '\0':
     throw std::runtime_error("PARSE_EXPECT_VALUE");
   default:
@@ -47,6 +66,8 @@ void crawler::JsonParser::parseValue() {
 }
 
 size_t crawler::JsonParser::getPos() const { return pos; }
+
+bool crawler::JsonParser::eof() { return pos >= json.size(); }
 
 crawler::JsonType crawler::JsonValue::getType() const { return type; }
 

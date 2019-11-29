@@ -12,6 +12,7 @@
 #include <regex>
 #include <string>
 
+/// Html Start
 void printNode(const crawler::Node &result) {
   TRACE(("tagName: %s\n", result.getElementData().getTagName().c_str()));
   crawler::AttrMap attributes = result.getElementData().getAttributes();
@@ -373,6 +374,9 @@ void testParseDoctype() {
   printNode(node);
 }
 
+/// Html End
+
+/// JSON Start
 void testJsonParseNull() {
   std::string json(" null");
   crawler::JsonParser parser(json);
@@ -380,7 +384,29 @@ void testJsonParseNull() {
   ASSERT_TRUE(jsonValue.getType() == crawler::JsonType::_NULL);
 }
 
+void testJsonParseBoolean() {
+  crawler::JsonParser trueParser(" true");
+  crawler::JsonValue jsonValue = trueParser.parse();
+  ASSERT_TRUE(jsonValue.getType() == crawler::JsonType::TRUE);
+
+  crawler::JsonParser falseParser("false");
+  crawler::JsonValue jsonValue1 = falseParser.parse();
+  ASSERT_TRUE(jsonValue1.getType() == crawler::JsonType::FALSE);
+}
+
+void testJsonParseError() {
+  crawler::JsonParser trueParser(" true xx");
+  try {
+    trueParser.parse();
+  } catch (const std::runtime_error &error) {
+    ASSERT_CSTRING_EQ("PARSE_ROOT_NOT_SINGULAR", error.what());
+  }
+}
+/// JSON End
+
 int main() {
+  testJsonParseError();
+  testJsonParseBoolean();
   testJsonParseNull();
   testParseDoctype();
   testContainsIgnoreCase();

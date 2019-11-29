@@ -1,6 +1,9 @@
 #ifndef JOSN_HPP_H__
 #define JOSN_HPP_H__
+#include <cassert>
+#include <exception>
 #include <string>
+
 namespace crawler {
 enum class JsonType { _NULL, FALSE, TRUE, NUMBER, STRING, ARRAY, OBJECT };
 enum class ParseResult {
@@ -36,23 +39,41 @@ public:
   [[nodiscard]] size_t getPos() const;
 
 private:
-  /// ws = *(%x20 / %x09 / %x0A / %x0D)
+  /// Whitespace ws = *(%x20 / %x09 / %x0A / %x0D)
   void parseWhitespace();
 
   /// null = "null"
   void parseNull();
 
-  /// parse value
+  /// Parse "true"
+  void parseTrue();
+
+  /// parse literalness, such as `true`, `false`, `null`.
+  void parseLiteralness(const std::string &literal, JsonType jsonType);
+
+  /// Parse "false"
+  void parseFalse();
+
+  /// Parse value
   void parseValue();
 
   /// Get currentChar
   char currentChar();
+
+  /// Check if end of line.
+  bool eof();
 
   JsonValue jsonValue;
 
   std::string json;
 
   std::size_t pos;
+
+  inline static std::string TRUE = "true";
+
+  inline static std::string FALSE = "false";
+
+  inline static std::string _NULL = "null";
 };
 
 } // namespace crawler
