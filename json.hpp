@@ -1,10 +1,10 @@
 #ifndef JOSN_HPP_H__
 #define JOSN_HPP_H__
+#include "strings.hpp"
 #include <cassert>
 #include <exception>
 #include <string>
 #include <variant>
-#include "strings.hpp"
 
 namespace crawler {
 enum class JsonType { _NULL, FALSE, TRUE, NUMBER, STRING, ARRAY, OBJECT };
@@ -84,11 +84,11 @@ private:
 
   std::string remainingData();
 
-  JsonValue jsonValue;
-
   std::string json;
 
   std::size_t pos;
+
+  JsonValue jsonValue;
 
   inline static std::string TRUE = "true";
 
