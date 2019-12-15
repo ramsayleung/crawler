@@ -351,15 +351,15 @@ bool crawler::And::matches(const Node &element) {
   return std::all_of(this->evalutors.cbegin(), this->evalutors.cend(),
                      [&](auto const &eval) { return eval->matches(element); });
 }
-crawler::And::And(const std::vector<Evaluator *> &evalutors)
-    : CombiningEvaluator(evalutors) {}
+crawler::And::And(const std::vector<Evaluator *> &_evalutors)
+    : CombiningEvaluator(_evalutors) {}
 
 bool crawler::Or::matches(const Node &element) {
   return std::any_of(this->evalutors.cbegin(), this->evalutors.cend(),
                      [&](auto const &eval) { return eval->matches(element); });
 }
-crawler::Or::Or(const std::vector<Evaluator *> &evalutors)
-    : CombiningEvaluator(evalutors) {}
+crawler::Or::Or(const std::vector<Evaluator *> &_evalutors)
+    : CombiningEvaluator(_evalutors) {}
 
 crawler::Parent::Parent(std::shared_ptr<Evaluator *> _eval)
     : StructuralEvaluator(std::move(_eval)){};
@@ -421,22 +421,22 @@ crawler::AttributeKeyValuePair::AttributeKeyValuePair(
   }
   value = tmpValue;
 }
-crawler::AttributeWithValue::AttributeWithValue(const std::string &key,
-                                                const std::string &value)
-    : AttributeKeyValuePair(key, value) {}
+crawler::AttributeWithValue::AttributeWithValue(const std::string &_key,
+                                                const std::string &_value)
+    : AttributeKeyValuePair(_key, _value) {}
 bool crawler::AttributeWithValue::matches(const Node &element) {
   return element.getElementData().containsAttribute(this->key) &&
          (value == element.getElementData().getValueByKey(key));
 }
-crawler::AttributeWithValueNot::AttributeWithValueNot(const std::string &key,
-                                                      const std::string &value)
-    : AttributeKeyValuePair(key, value) {}
+crawler::AttributeWithValueNot::AttributeWithValueNot(const std::string &_key,
+                                                      const std::string &_value)
+    : AttributeKeyValuePair(_key, _value) {}
 bool crawler::AttributeWithValueNot::matches(const crawler::Node &node) {
   return value != node.getElementData().getValueByKey(key);
 }
 crawler::AttributeValueStartWithPrefix::AttributeValueStartWithPrefix(
-    const std::string &key, const std::string &value)
-    : AttributeKeyValuePair(key, value) {}
+    const std::string &_key, const std::string &_value)
+    : AttributeKeyValuePair(_key, _value) {}
 bool crawler::AttributeValueStartWithPrefix::matches(
     const crawler::Node &node) {
   const std::string source = node.getElementData().getValueByKey(key);
@@ -444,19 +444,21 @@ bool crawler::AttributeValueStartWithPrefix::matches(
          startsWith(value, source);
 }
 crawler::AttributeValueEndWithSuffix::AttributeValueEndWithSuffix(
-    const std::string &key, const std::string &value)
-    : AttributeKeyValuePair(key, value) {}
+    const std::string &_key, const std::string &_value)
+    : AttributeKeyValuePair(_key, _value) {}
 bool crawler::AttributeValueEndWithSuffix::matches(const crawler::Node &node) {
   std::string source = node.getElementData().getValueByKey(key);
   return node.getElementData().containsAttribute(key) &&
          endsWith(value, source);
 }
 crawler::AttributeValueContainWithSubstring::AttributeValueContainWithSubstring(
-    const std::string &key, const std::string &value)
-    : AttributeKeyValuePair(key, value) {}
+    const std::string &_key, const std::string &_value)
+    : AttributeKeyValuePair(_key, _value) {}
 bool crawler::AttributeValueContainWithSubstring::matches(
     const crawler::Node &node) {
   std::string source = node.getElementData().getValueByKey(key);
   return node.getElementData().containsAttribute(key) &&
          indexOf(value, source) != std::string::npos;
 }
+
+crawler::Evaluator::~Evaluator() {}
