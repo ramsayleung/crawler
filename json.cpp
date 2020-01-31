@@ -1,5 +1,9 @@
 #include "json.hpp"
 
+#include <cassert>
+#include <cstddef>
+#include <stdexcept>
+#include <string>
 #include <utility>
 
 crawler::JsonValue crawler::JsonParser::parse() {
@@ -44,10 +48,37 @@ void crawler::JsonParser::parseLiteralness(const std::string &literal,
   if (literal != compareData) {
     throw std::runtime_error("PARSE_INVALID_VALUE");
   }
+  // move `pos` steps forward
   pos += literalSize;
   this->jsonValue.setType(jsonType);
 }
 
+void crawler::JsonParser::parseString() {
+  const char *data = json.c_str();
+  // beginning quotation mark.
+  assert(data[pos++] == '\"');
+  std::string buffer;
+  while (true) {
+    char ch = data[pos++];
+    switch (ch) {
+      // ending quotation mark
+    case '\"':
+      jsonValue.setData(buffer);
+      jsonValue.setType(crawler::JsonType::STRING);
+      return;
+    case '\0':
+      throw std::runtime_error("PARSE_MISS_QUOTATION_MARK");
+    default:
+      buffer += ch;
+    }
+  }
+}
+
+/// number format:
+/// number = [ "-" ] int [ frac ] [ exp ]
+/// int = "0" / digit1-9 *digit
+/// frac = "." 1*digit
+/// exp = ("e" / "E") ["-" / "+"] 1*digit
 void crawler::JsonParser::parseNumber() {
   const char *data = json.c_str();
   size_t copyPos = pos;
@@ -110,6 +141,8 @@ void crawler::JsonParser::parseValue() {
     return parseNumber();
   case '-':
     return parseNumber();
+  case '\"':
+    return parseString();
   case '\0':
     throw std::runtime_error("PARSE_EXPECT_VALUE");
   default:

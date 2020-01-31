@@ -468,9 +468,17 @@ void testJsonParseNumber() {
   testJsonParseNumber(1.234E-10, "1.234E-10");
 }
 
+void testJsonParseString() {
+  crawler::JsonParser stringParser("\"Hello\"");
+  crawler::JsonValue jsonValue = stringParser.parse();
+  ASSERT_TRUE(jsonValue.getType() == crawler::JsonType::STRING);
+  ASSERT_CSTRING_EQ(jsonValue.getString().c_str(), "Hello");
+}
+
 /// JSON End
 
 int main() {
+  testJsonParseString();
   testJsonParseNumber();
   testJsonParseNumberError();
   testJsonParseError();

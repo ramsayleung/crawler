@@ -18,7 +18,7 @@ class Context {
 private:
   std::string jsonStr;
 };
-using JsonData = std::variant<double, bool>;
+using JsonData = std::variant<double, bool, std::nullptr_t, std::string>;
 
 class JsonValue {
 public:
@@ -33,6 +33,12 @@ public:
   void setData(const JsonData &_data);
 
   double getNumber();
+
+  std::string getString();
+
+  bool getBoolean();
+
+  std::nullptr_t getNull();
 
 private:
   JsonData data;
@@ -69,6 +75,9 @@ private:
 
   /// Parse number
   void parseNumber();
+
+  /// Parse string
+  void parseString();
 
   /// Parse value
   void parseValue();
