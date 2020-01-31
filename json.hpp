@@ -94,11 +94,11 @@ private:
 
   std::string remainingData();
 
-  JsonValue jsonValue;
-
   std::string json;
 
   std::size_t pos;
+
+  JsonValue jsonValue;
 
   inline static std::string TRUE = "true";
 
