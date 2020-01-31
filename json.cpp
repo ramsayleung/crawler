@@ -25,20 +25,23 @@ void crawler::JsonParser::parseWhitespace() {
 }
 
 crawler::JsonParser::JsonParser(std::string json)
-    : json(std::move(json)), pos(0), jsonValue(JsonType::_NULL) {}
+    : jsonValue(JsonType::_NULL), json(std::move(json)), pos(0) {}
 
 const std::string &crawler::JsonParser::getJson() const { return json; }
 
 void crawler::JsonParser::parseTrue() {
-  parseLiteralness(TRUE, JsonType::TRUE);
+  parseLiteralness(TRUE, JsonType::BOOLEAN);
+  this->jsonValue.setData(true);
 }
 
 void crawler::JsonParser::parseFalse() {
-  parseLiteralness(FALSE, JsonType::FALSE);
+  parseLiteralness(FALSE, JsonType::BOOLEAN);
+  this->jsonValue.setData(false);
 }
 
 void crawler::JsonParser::parseNull() {
   parseLiteralness(_NULL, JsonType::_NULL);
+  this->jsonValue.setData(nullptr);
 }
 
 void crawler::JsonParser::parseLiteralness(const std::string &literal,
@@ -178,6 +181,22 @@ double crawler::JsonValue::getNumber() {
   assert(type == JsonType::NUMBER);
   return std::get<double>(data);
 }
+
+std::string crawler::JsonValue::getString() {
+  assert(type == JsonType::STRING);
+  return std::get<std::string>(data);
+}
+
+bool crawler::JsonValue::getBoolean() {
+  assert(type == JsonType::BOOLEAN);
+  return std::get<bool>(data);
+}
+
+std::nullptr_t crawler::JsonValue::getNull() {
+  assert(type == JsonType::_NULL);
+  return std::get<std::nullptr_t>(data);
+}
+
 void crawler::JsonValue::setData(const crawler::JsonData &_data) {
   JsonValue::data = _data;
 }

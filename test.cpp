@@ -382,16 +382,19 @@ void testJsonParseNull() {
   crawler::JsonParser parser(json);
   crawler::JsonValue jsonValue = parser.parse();
   ASSERT_TRUE(jsonValue.getType() == crawler::JsonType::_NULL);
+  ASSERT_TRUE(nullptr == jsonValue.getNull());
 }
 
 void testJsonParseBoolean() {
   crawler::JsonParser trueParser(" true");
   crawler::JsonValue jsonValue = trueParser.parse();
-  ASSERT_TRUE(jsonValue.getType() == crawler::JsonType::TRUE);
+  ASSERT_TRUE(jsonValue.getType() == crawler::JsonType::BOOLEAN);
+  ASSERT_TRUE(jsonValue.getBoolean());
 
   crawler::JsonParser falseParser("false");
   crawler::JsonValue jsonValue1 = falseParser.parse();
-  ASSERT_TRUE(jsonValue1.getType() == crawler::JsonType::FALSE);
+  ASSERT_TRUE(jsonValue1.getType() == crawler::JsonType::BOOLEAN);
+  ASSERT_FALSE(jsonValue1.getBoolean());
 }
 
 void testJsonParseError() {

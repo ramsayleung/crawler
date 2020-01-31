@@ -39,6 +39,8 @@ static int test_pass = 0;
 
 #define ASSERT_TRUE(actual) EXPECT_EQ_BASE(true == (actual), true, actual, "%d")
 
+#define ASSERT_FALSE(actual) EXPECT_EQ_BASE(false == (actual), false, actual, "%d")
+
 #define ASSERT_CSTRING_EQ(expect, actual) EXPECT_EQ_BASE(strcmp((expect),(actual))==0, expect, actual, "%s")
 
 #endif  //DOUBANCRAWLER_TEST_H

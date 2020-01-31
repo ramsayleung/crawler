@@ -1,13 +1,14 @@
 #ifndef JOSN_HPP_H__
 #define JOSN_HPP_H__
+#include "strings.hpp"
 #include <cassert>
+#include <cstddef>
 #include <exception>
 #include <string>
 #include <variant>
-#include "strings.hpp"
 
 namespace crawler {
-enum class JsonType { _NULL, FALSE, TRUE, NUMBER, STRING, ARRAY, OBJECT };
+enum class JsonType { _NULL, BOOLEAN, NUMBER, STRING, ARRAY, OBJECT };
 enum class ParseResult {
   PARSE_OK,
   PARSE_EXPECT_VALUE,
