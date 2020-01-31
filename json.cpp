@@ -56,6 +56,22 @@ void crawler::JsonParser::parseLiteralness(const std::string &literal,
   this->jsonValue.setType(jsonType);
 }
 
+// string format:
+// string = quotation-mark *char quotation-mark
+// char = unescaped /
+//    escape (
+//        %x22 /          ; "    quotation mark  U+0022
+//        %x5C /          ; \    reverse solidus U+005C
+//        %x2F /          ; /    solidus         U+002F
+//        %x62 /          ; b    backspace       U+0008
+//        %x66 /          ; f    form feed       U+000C
+//        %x6E /          ; n    line feed       U+000A
+//        %x72 /          ; r    carriage return U+000D
+//        %x74 /          ; t    tab             U+0009
+//        %x75 4HEXDIG )  ; uXXXX                U+XXXX
+// escape = %x5C          ; \
+// quotation-mark = %x22  ; "
+// unescaped = %x20-21 / %x23-5B / %x5D-10FFFF
 void crawler::JsonParser::parseString() {
   const char *data = json.c_str();
   // beginning quotation mark.
@@ -69,9 +85,44 @@ void crawler::JsonParser::parseString() {
       jsonValue.setData(buffer);
       jsonValue.setType(crawler::JsonType::STRING);
       return;
+      /* handle escape char */
+    case '\\':
+      switch (data[pos++]) {
+      case '\"':
+        buffer += '\"';
+        break;
+      case '\\':
+        buffer += '\\';
+        break;
+      case '/':
+        buffer += '/';
+        break;
+      case 'b':
+        buffer += '\b';
+        break;
+      case 'f':
+        buffer += '\f';
+        break;
+      case 'n':
+        buffer += '\n';
+        break;
+      case 'r':
+        buffer += '\r';
+        break;
+      case 't':
+        buffer += '\t';
+        break;
+      default:
+        throw std::runtime_error("PARSE_INVALID_STRING_ESCAPE");
+      }
+      break;
     case '\0':
       throw std::runtime_error("PARSE_MISS_QUOTATION_MARK");
     default:
+      // handle illegal unescaped char
+      if ((unsigned char)ch < 0x20) {
+        throw std::runtime_error("PARSE_INVALID_STRING_CHAR");
+      }
       buffer += ch;
     }
   }

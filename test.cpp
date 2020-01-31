@@ -423,8 +423,7 @@ void testJsonParseNumber(double expect, const std::string &json) {
   ASSERT_DOUBLE_EQ(expect, jsonValue.getNumber());
 }
 
-void testJsonParseNumberError(const std::string &error,
-                              const std::string &json) {
+void testJsonParseError(const std::string &error, const std::string &json) {
 
   crawler::JsonParser parser(json);
 
@@ -438,16 +437,16 @@ void testJsonParseNumberError(const std::string &error,
 }
 
 void testJsonParseNumberError() {
-  testJsonParseNumberError("PARSE_INVALID_VALUE", "+0");
-  testJsonParseNumberError("PARSE_INVALID_VALUE", "+1");
+  testJsonParseError("PARSE_INVALID_VALUE", "+0");
+  testJsonParseError("PARSE_INVALID_VALUE", "+1");
   /* at least one digit before '.' */
-  testJsonParseNumberError("PARSE_INVALID_VALUE", ".123");
+  testJsonParseError("PARSE_INVALID_VALUE", ".123");
   /* at least one digit after '.' */
-  testJsonParseNumberError("PARSE_INVALID_VALUE", "1.");
-  testJsonParseNumberError("PARSE_INVALID_VALUE", "INF");
-  testJsonParseNumberError("PARSE_INVALID_VALUE", "inf");
-  testJsonParseNumberError("PARSE_INVALID_VALUE", "NAN");
-  testJsonParseNumberError("PARSE_INVALID_VALUE", "nan");
+  testJsonParseError("PARSE_INVALID_VALUE", "1.");
+  testJsonParseError("PARSE_INVALID_VALUE", "INF");
+  testJsonParseError("PARSE_INVALID_VALUE", "inf");
+  testJsonParseError("PARSE_INVALID_VALUE", "NAN");
+  testJsonParseError("PARSE_INVALID_VALUE", "nan");
 }
 
 void testJsonParseNumber() {
@@ -477,10 +476,18 @@ void testJsonParseString() {
   ASSERT_TRUE(jsonValue.getType() == crawler::JsonType::STRING);
   ASSERT_CSTRING_EQ(jsonValue.getString().c_str(), "Hello");
 }
+void testJsonParseEscapeString() {
+  crawler::JsonParser parser("\"\\b\"");
+  crawler::JsonValue value = parser.parse();
+  ASSERT_TRUE(value.getType() == crawler::JsonType::STRING);
+  ASSERT_CSTRING_EQ(value.getString().c_str(), "\b");
+  testJsonParseError("PARSE_INVALID_STRING_ESCAPE", "\"\\v\"");
+}
 
 /// JSON End
 
 int main() {
+  testJsonParseEscapeString();
   testJsonParseString();
   testJsonParseNumber();
   testJsonParseNumberError();
