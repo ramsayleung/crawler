@@ -5,9 +5,11 @@
 #include <cstddef>
 #include <exception>
 #include <string>
+#include <vector>
 #include <variant>
 
 namespace crawler {
+class JsonValue;
 enum class JsonType { _NULL, BOOLEAN, NUMBER, STRING, ARRAY, OBJECT };
 enum class ParseResult {
   PARSE_OK,
@@ -19,7 +21,9 @@ class Context {
 private:
   std::string jsonStr;
 };
-using JsonData = std::variant<double, bool, std::nullptr_t, std::string>;
+
+using JsonArray = std::vector<JsonValue>;
+using JsonData = std::variant<double, bool, std::nullptr_t, std::string, JsonArray>;
 
 class JsonValue {
 public:
@@ -31,7 +35,7 @@ public:
 
   void setType(JsonType _type);
 
-  void setData(const JsonData &_data);
+
 
   double getNumber();
 
@@ -41,9 +45,16 @@ public:
 
   std::nullptr_t getNull();
 
+  JsonArray getArray();
+
+  bool isEmptyValue();
+
 private:
   JsonData data;
 
+public:
+  void setData(const JsonData &_data);
+private:
   JsonType type;
 };
 
@@ -58,7 +69,12 @@ public:
 
   [[nodiscard]] size_t getPos() const;
 
+  [[nodiscard]] JsonValue getJsonValue() const;
+
 private:
+  /// Parse value
+  void parseValue();
+
   /// Whitespace ws = *(%x20 / %x09 / %x0A / %x0D)
   void parseWhitespace();
 
@@ -104,9 +120,6 @@ private:
   /// Parse Array, the array format:
   /// array = %x5B ws [ value *( ws %x2C ws value ) ] ws %x5D
   void parseArray();
-
-  /// Parse value
-  void parseValue();
 
   /// Return current Char
   char currentChar();

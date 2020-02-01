@@ -55,6 +55,37 @@ void crawler::JsonParser::parseLiteralness(const std::string &literal,
   this->jsonValue.setType(jsonType);
 }
 
+void crawler::JsonParser::parseArray() {
+  jsonValue.setType(crawler::JsonType::ARRAY);
+  assert(consumeChar() == '[');
+  if (currentChar() == ']') {
+    pos++;
+    JsonArray emptyValue;
+    jsonValue.setData(emptyValue);
+  }
+  while (true) {
+    std::string copyData = json.substr(pos, json.length() - pos);
+    JsonParser copyDataParser(copyData);
+    copyDataParser.parseWhitespace();
+    copyDataParser.parseValue();
+    copyDataParser.parseWhitespace();
+    if (getJsonValue().isEmptyValue()) {
+      JsonArray emptyValue;
+      jsonValue.setData(emptyValue);
+    }
+    JsonArray array = getJsonValue().getArray();
+    array.emplace_back(copyDataParser.getJsonValue());
+    jsonValue.setData(array);
+    pos = copyDataParser.getPos() + pos;
+    if (currentChar() == ',') {
+      pos++;
+    } else if (currentChar() == ']') {
+      pos++;
+      break;
+    }
+  }
+}
+
 void crawler::JsonParser::parseString() {
   // beginning quotation mark.
   assert(consumeChar() == '\"');
@@ -174,6 +205,8 @@ void crawler::JsonParser::parseValue() {
     return parseNumber();
   case '\"':
     return parseString();
+  case '[':
+    return parseArray();
   case '\0':
     throw std::runtime_error("PARSE_EXPECT_VALUE");
   default:
@@ -187,6 +220,10 @@ char crawler::JsonParser::consumeChar() { return json.c_str()[pos++]; }
 
 size_t crawler::JsonParser::getPos() const { return pos; }
 
+crawler::JsonValue crawler::JsonParser::getJsonValue() const {
+  return jsonValue;
+}
+
 bool crawler::JsonParser::eof() { return pos >= json.size(); }
 std::string crawler::JsonParser::remainingData() {
   return json.substr(pos, json.size() - pos);
@@ -197,7 +234,8 @@ bool crawler::JsonParser::isDigit1To9(char digit) {
 
 crawler::JsonType crawler::JsonValue::getType() const { return type; }
 
-crawler::JsonValue::JsonValue(crawler::JsonType type) : type(type) {}
+crawler::JsonValue::JsonValue(crawler::JsonType type)
+    : data(nullptr), type(type) {}
 void crawler::JsonValue::setType(crawler::JsonType _type) {
   JsonValue::type = _type;
 }
@@ -225,6 +263,21 @@ bool crawler::JsonValue::getBoolean() {
 std::nullptr_t crawler::JsonValue::getNull() {
   assert(type == JsonType::_NULL);
   return std::get<std::nullptr_t>(data);
+}
+
+crawler::JsonArray crawler::JsonValue::getArray() {
+  assert(type == JsonType::ARRAY);
+  return std::get<crawler::JsonArray>(data);
+}
+
+bool crawler::JsonValue::isEmptyValue() {
+  try {
+    std::get<std::nullptr_t>(data);
+    // if doesn't throw exception, return true.
+    return true;
+  } catch (const std::bad_variant_access &) {
+    return false;
+  }
 }
 
 void crawler::JsonValue::setData(const crawler::JsonData &_data) {

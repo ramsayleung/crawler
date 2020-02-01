@@ -481,6 +481,7 @@ void testJsonParseString() {
   ASSERT_TRUE(chineseJsonValue.getType() == crawler::JsonType::STRING);
   ASSERT_CSTRING_EQ(chineseJsonValue.getString().c_str(), "你好, 世界");
 }
+
 void testJsonParseEscapeString() {
   crawler::JsonParser parser("\"\\b\"");
   crawler::JsonValue value = parser.parse();
@@ -489,9 +490,16 @@ void testJsonParseEscapeString() {
   testJsonParseError("PARSE_INVALID_STRING_ESCAPE", "\"\\v\"");
 }
 
+void testJsonParseArray(){
+    crawler::JsonParser arrayParser("[\"hello\"]");
+    crawler::JsonValue value =  arrayParser.parse();
+    ASSERT_TRUE(value.getType() == crawler::JsonType::ARRAY);
+    ASSERT_TRUE(value.getArray().front().getType() == crawler::JsonType::STRING);
+}
 /// JSON End
 
 int main() {
+  testJsonParseArray();
   testJsonParseEscapeString();
   testJsonParseString();
   testJsonParseNumber();
