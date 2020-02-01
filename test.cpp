@@ -475,6 +475,11 @@ void testJsonParseString() {
   crawler::JsonValue jsonValue = stringParser.parse();
   ASSERT_TRUE(jsonValue.getType() == crawler::JsonType::STRING);
   ASSERT_CSTRING_EQ(jsonValue.getString().c_str(), "Hello");
+
+  crawler::JsonParser chineseParser("\"你好, 世界\"");
+  crawler::JsonValue chineseJsonValue = chineseParser.parse();
+  ASSERT_TRUE(chineseJsonValue.getType() == crawler::JsonType::STRING);
+  ASSERT_CSTRING_EQ(chineseJsonValue.getString().c_str(), "你好, 世界");
 }
 void testJsonParseEscapeString() {
   crawler::JsonParser parser("\"\\b\"");

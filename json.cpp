@@ -17,9 +17,8 @@ crawler::JsonValue crawler::JsonParser::parse() {
 }
 
 void crawler::JsonParser::parseWhitespace() {
-  const char *jsonChars = json.c_str();
-  while (jsonChars[pos] == ' ' || jsonChars[pos] == '\t' ||
-         jsonChars[pos] == '\n' || jsonChars[pos] == '\r') {
+  while (currentChar() == ' ' || currentChar() == '\t' ||
+         currentChar() == '\n' || currentChar() == '\r') {
     pos++;
   }
 }
@@ -56,29 +55,12 @@ void crawler::JsonParser::parseLiteralness(const std::string &literal,
   this->jsonValue.setType(jsonType);
 }
 
-// string format:
-// string = quotation-mark *char quotation-mark
-// char = unescaped /
-//    escape (
-//        %x22 /          ; "    quotation mark  U+0022
-//        %x5C /          ; \    reverse solidus U+005C
-//        %x2F /          ; /    solidus         U+002F
-//        %x62 /          ; b    backspace       U+0008
-//        %x66 /          ; f    form feed       U+000C
-//        %x6E /          ; n    line feed       U+000A
-//        %x72 /          ; r    carriage return U+000D
-//        %x74 /          ; t    tab             U+0009
-//        %x75 4HEXDIG )  ; uXXXX                U+XXXX
-// escape = %x5C          ; \
-// quotation-mark = %x22  ; "
-// unescaped = %x20-21 / %x23-5B / %x5D-10FFFF
 void crawler::JsonParser::parseString() {
-  const char *data = json.c_str();
   // beginning quotation mark.
-  assert(data[pos++] == '\"');
+  assert(consumeChar() == '\"');
   std::string buffer;
   while (true) {
-    char ch = data[pos++];
+    char ch = consumeChar();
     switch (ch) {
       // ending quotation mark
     case '\"':
@@ -87,7 +69,7 @@ void crawler::JsonParser::parseString() {
       return;
       /* handle escape char */
     case '\\':
-      switch (data[pos++]) {
+      switch (consumeChar()) {
       case '\"':
         buffer += '\"';
         break;
@@ -128,11 +110,6 @@ void crawler::JsonParser::parseString() {
   }
 }
 
-/// number format:
-/// number = [ "-" ] int [ frac ] [ exp ]
-/// int = "0" / digit1-9 *digit
-/// frac = "." 1*digit
-/// exp = ("e" / "E") ["-" / "+"] 1*digit
 void crawler::JsonParser::parseNumber() {
   const char *data = json.c_str();
   size_t copyPos = pos;
@@ -205,6 +182,8 @@ void crawler::JsonParser::parseValue() {
 }
 
 char crawler::JsonParser::currentChar() { return json.c_str()[pos]; }
+
+char crawler::JsonParser::consumeChar() { return json.c_str()[pos++]; }
 
 size_t crawler::JsonParser::getPos() const { return pos; }
 
