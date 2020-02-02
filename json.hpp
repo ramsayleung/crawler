@@ -69,7 +69,7 @@ public:
   // Parse string to JsonValue
   JsonValue parse();
 
-  void setJson(const std::string& _json);
+  void setJson(const std::string &_json);
 
   void setPos(const size_t _pos);
 
