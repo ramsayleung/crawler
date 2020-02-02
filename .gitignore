@@ -12,3 +12,4 @@ build/
 test
 .cmake/
 /CMakeLists.txt.user.4.8-pre1
+/apptest

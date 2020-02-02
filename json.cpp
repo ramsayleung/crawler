@@ -138,6 +138,7 @@ void crawler::JsonParser::parseArray() {
   while (true) {
     std::string copyData = json.substr(pos, json.length() - pos);
     JsonParser copyDataParser(copyData);
+    copyDataParser.parseWhitespace();
     copyDataParser.parseValue();
     copyDataParser.parseWhitespace();
     if (getJsonValue().isEmptyValue()) {
