@@ -254,11 +254,10 @@ void crawler::JsonParser::parseNumber() {
       ;
   }
 
-  char *endPtr;
-  double number = strtod(remainingData().c_str(), &endPtr);
+  const char *numberStr = json.substr(pos, copyPos - pos).c_str();
+  double number = strtod(numberStr, NULL);
   // if endPtr points end of the string.
-  pos = *endPtr == '\0' ? json.size()
-                        : crawler::indexOf(std::string(endPtr), json);
+  pos += copyPos;
   this->jsonValue.setData(number);
   this->jsonValue.setType(JsonType::NUMBER);
 }
