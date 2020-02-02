@@ -5,12 +5,14 @@
 #include "dom.hpp"
 #include "html.hpp"
 #include "http.hpp"
+#include "json.hpp"
 #include "utils.hpp"
 
 #include <fstream>
 #include <regex>
 #include <string>
 
+/// Html Start
 void printNode(const crawler::Node &result) {
   TRACE(("tagName: %s\n", result.getElementData().getTagName().c_str()));
   crawler::AttrMap attributes = result.getElementData().getAttributes();
@@ -372,7 +374,196 @@ void testParseDoctype() {
   printNode(node);
 }
 
+/// Html End
+
+/// JSON Start
+void testJsonParseNull() {
+  std::string json(" null");
+  crawler::JsonParser parser(json);
+  crawler::JsonValue jsonValue = parser.parse();
+  ASSERT_TRUE(jsonValue.getType() == crawler::JsonType::_NULL);
+  ASSERT_TRUE(nullptr == jsonValue.getNull());
+}
+
+void testJsonParseBoolean() {
+  crawler::JsonParser trueParser(" true");
+  crawler::JsonValue jsonValue = trueParser.parse();
+  ASSERT_TRUE(jsonValue.getType() == crawler::JsonType::BOOLEAN);
+  ASSERT_TRUE(jsonValue.getBoolean());
+
+  crawler::JsonParser falseParser("false");
+  crawler::JsonValue jsonValue1 = falseParser.parse();
+  ASSERT_TRUE(jsonValue1.getType() == crawler::JsonType::BOOLEAN);
+  ASSERT_FALSE(jsonValue1.getBoolean());
+}
+
+void testJsonParseError() {
+  crawler::JsonParser trueParser(" true xx");
+  crawler::JsonParser numberParser(" 0 12");
+  try {
+    trueParser.parse();
+
+    // it should be unreachable, otherwise, it should failed.
+    ASSERT_TRUE(0);
+  } catch (const std::runtime_error &error) {
+    ASSERT_CSTRING_EQ("PARSE_ROOT_NOT_SINGULAR", error.what());
+  }
+  try {
+    numberParser.parse();
+    ASSERT_TRUE(0);
+  } catch (const std::runtime_error &error) {
+    ASSERT_CSTRING_EQ("PARSE_ROOT_NOT_SINGULAR", error.what());
+  }
+}
+
+void testJsonParseNumber(double expect, const std::string &json) {
+  crawler::JsonParser trueParser(json);
+  crawler::JsonValue jsonValue = trueParser.parse();
+  ASSERT_TRUE(jsonValue.getType() == crawler::JsonType::NUMBER);
+  ASSERT_DOUBLE_EQ(expect, jsonValue.getNumber());
+}
+
+void testJsonParseError(const std::string &error, const std::string &json) {
+
+  crawler::JsonParser parser(json);
+
+  try {
+    parser.parse();
+    // unreachable line.
+    ASSERT_TRUE(0);
+  } catch (const std::runtime_error &ex) {
+    ASSERT_CSTRING_EQ(error.c_str(), ex.what());
+  }
+}
+
+void testJsonParseNumberError() {
+  testJsonParseError("PARSE_INVALID_VALUE", "+0");
+  testJsonParseError("PARSE_INVALID_VALUE", "+1");
+  /* at least one digit before '.' */
+  testJsonParseError("PARSE_INVALID_VALUE", ".123");
+  /* at least one digit after '.' */
+  testJsonParseError("PARSE_INVALID_VALUE", "1.");
+  testJsonParseError("PARSE_INVALID_VALUE", "INF");
+  testJsonParseError("PARSE_INVALID_VALUE", "inf");
+  testJsonParseError("PARSE_INVALID_VALUE", "NAN");
+  testJsonParseError("PARSE_INVALID_VALUE", "nan");
+}
+
+void testJsonParseNumber() {
+  testJsonParseNumber(0.0, "0");
+  testJsonParseNumber(0.0, "-0");
+  testJsonParseNumber(0.0, "-0.0");
+  testJsonParseNumber(1.0, "1");
+  testJsonParseNumber(-1.0, "-1");
+  testJsonParseNumber(1.5, "1.5");
+  testJsonParseNumber(-1.5, "-1.5");
+  testJsonParseNumber(3.1416, "3.1416");
+  testJsonParseNumber(1E10, "1E10");
+  testJsonParseNumber(1e10, "1e10");
+  testJsonParseNumber(1E+10, "1E+10");
+  testJsonParseNumber(1E-10, "1E-10");
+  testJsonParseNumber(-1E10, "-1E10");
+  testJsonParseNumber(-1e10, "-1e10");
+  testJsonParseNumber(-1E+10, "-1E+10");
+  testJsonParseNumber(-1E-10, "-1E-10");
+  testJsonParseNumber(1.234E+10, "1.234E+10");
+  testJsonParseNumber(1.234E-10, "1.234E-10");
+}
+
+void testJsonParseString() {
+  crawler::JsonParser stringParser("\"Hello\"");
+  crawler::JsonValue jsonValue = stringParser.parse();
+  ASSERT_TRUE(jsonValue.getType() == crawler::JsonType::STRING);
+  ASSERT_CSTRING_EQ(jsonValue.getString().c_str(), "Hello");
+
+  crawler::JsonParser chineseParser("\"你好, 世界\"");
+  crawler::JsonValue chineseJsonValue = chineseParser.parse();
+  ASSERT_TRUE(chineseJsonValue.getType() == crawler::JsonType::STRING);
+  ASSERT_CSTRING_EQ(chineseJsonValue.getString().c_str(), "你好, 世界");
+}
+
+void testJsonParseEscapeString() {
+  crawler::JsonParser parser("\"\\b\"");
+  crawler::JsonValue value = parser.parse();
+  ASSERT_TRUE(value.getType() == crawler::JsonType::STRING);
+  ASSERT_CSTRING_EQ(value.getString().c_str(), "\b");
+  testJsonParseError("PARSE_INVALID_STRING_ESCAPE", "\"\\v\"");
+}
+
+void testJsonParseArray() {
+  crawler::JsonParser arrayParser("[\"hello\"]");
+  crawler::JsonValue value = arrayParser.parse();
+  ASSERT_TRUE(value.getType() == crawler::JsonType::ARRAY);
+  ASSERT_TRUE(value.getArray().front().getType() == crawler::JsonType::STRING);
+
+  crawler::JsonParser arrayParser2("[ null , false , true , 123 , \"abc\" ]");
+  value = arrayParser2.parse();
+  ASSERT_TRUE(value.getType() == crawler::JsonType::ARRAY);
+  ASSERT_TRUE(value.getArray().size() == 5);
+  crawler::JsonArray array = value.getArray();
+  ASSERT_TRUE(array[0].getType() == crawler::JsonType::_NULL);
+  ASSERT_TRUE(array[1].getType() == crawler::JsonType::BOOLEAN);
+  ASSERT_TRUE(array[2].getType() == crawler::JsonType::BOOLEAN);
+  ASSERT_TRUE(array[3].getType() == crawler::JsonType::NUMBER);
+  ASSERT_TRUE(array[4].getType() == crawler::JsonType::STRING);
+
+  crawler::JsonParser arrayParser3(
+      "[ [ ] , [ 0 ] , [ 0 , 1 ] , [ 0 , 1 , 2 ] ]");
+  value = arrayParser3.parse();
+  array = value.getArray();
+  crawler::JsonArray subArray = array[1].getArray();
+  ASSERT_TRUE(array[0].getType() == crawler::JsonType::ARRAY);
+  ASSERT_TRUE(array[1].getType() == crawler::JsonType::ARRAY);
+  ASSERT_TRUE(subArray[0].getType() == crawler::JsonType::NUMBER);
+  ASSERT_TRUE(subArray.size() == 1);
+  ASSERT_TRUE(array[2].getType() == crawler::JsonType::ARRAY);
+  subArray = array[2].getArray();
+  ASSERT_TRUE(subArray.size() == 2);
+  ASSERT_TRUE(subArray[0].getType() == crawler::JsonType::NUMBER);
+  ASSERT_TRUE(array[3].getType() == crawler::JsonType::ARRAY);
+  subArray = array[3].getArray();
+  ASSERT_TRUE(subArray.size() == 3);
+  ASSERT_TRUE(subArray[0].getType() == crawler::JsonType::NUMBER);
+}
+
+void testJsonParseObject() {
+  crawler::JsonParser objectParser("{\"number\": 2}");
+  crawler::JsonValue value = objectParser.parse();
+  ASSERT_TRUE(value.getType() == crawler::JsonType::OBJECT);
+  ASSERT_TRUE(value.getObject().size() == 1);
+}
+
+void testJsonParseObjectError() {
+  testJsonParseError("PARSE_OBJECT_MISS_KEY", "{:1,");
+  testJsonParseError("PARSE_OBJECT_MISS_KEY", "{1:1,");
+  testJsonParseError("PARSE_OBJECT_MISS_KEY", "{true:1,");
+  testJsonParseError("PARSE_OBJECT_MISS_KEY", "{false:1,");
+  testJsonParseError("PARSE_OBJECT_MISS_KEY", "{null:1,");
+  testJsonParseError("PARSE_OBJECT_MISS_KEY", "{[]:1,");
+  testJsonParseError("PARSE_OBJECT_MISS_KEY", "{{}:1,");
+  testJsonParseError("PARSE_OBJECT_MISS_KEY", "{\"a\":1,");
+
+  testJsonParseError("PARSE_OBJECT_MISS_COLON", "{\"a\"}");
+  testJsonParseError("PARSE_OBJECT_MISS_COLON", "{\"a\",\"b\"}");
+
+  testJsonParseError("PARSE_MISS_COMMA_OR_CURLY_BRACKET", "{\"a\":1");
+  testJsonParseError("PARSE_MISS_COMMA_OR_CURLY_BRACKET", "{\"a\":1]");
+  testJsonParseError("PARSE_MISS_COMMA_OR_CURLY_BRACKET", "{\"a\":1 \"b\"");
+  testJsonParseError("PARSE_MISS_COMMA_OR_CURLY_BRACKET", "{\"a\":{}");
+}
+/// JSON End
+
 int main() {
+  testJsonParseObjectError();
+  testJsonParseObject();
+  testJsonParseArray();
+  testJsonParseEscapeString();
+  testJsonParseString();
+  testJsonParseNumber();
+  testJsonParseNumberError();
+  testJsonParseError();
+  testJsonParseBoolean();
+  testJsonParseNull();
   testParseDoctype();
   testContainsIgnoreCase();
   testSelectByAttributeValueContainsSubString();

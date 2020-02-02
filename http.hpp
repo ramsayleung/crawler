@@ -18,5 +18,5 @@ void error(const char *msg);
 
 std::string http_get(const std::string &host);
 
-}  // namespace crawler
-#endif  //DOUBANCRAWLER_HTTP_H
+} // namespace crawler
+#endif // DOUBANCRAWLER_HTTP_H

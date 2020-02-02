@@ -14,4 +14,4 @@ jobs:
     - name: cmake build
       run: cmake --build . -j 8
     - name: run test
-      run: ./test
+      run: ./apptest

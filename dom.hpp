@@ -234,6 +234,7 @@ class Evaluator {
 public:
   /// Derived class need to implement this function to show how to match.
   virtual bool matches(const Node &element) = 0;
+  virtual ~Evaluator() = 0;
 };
 
 /// Combining Evaluator.
