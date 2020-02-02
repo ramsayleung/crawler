@@ -58,15 +58,16 @@ void crawler::JsonParser::parseLiteralness(const std::string &literal,
 void crawler::JsonParser::parseArray() {
   jsonValue.setType(crawler::JsonType::ARRAY);
   assert(consumeChar() == '[');
+  parseWhitespace();
   if (currentChar() == ']') {
     pos++;
     JsonArray emptyValue;
     jsonValue.setData(emptyValue);
+    return;
   }
   while (true) {
     std::string copyData = json.substr(pos, json.length() - pos);
     JsonParser copyDataParser(copyData);
-    copyDataParser.parseWhitespace();
     copyDataParser.parseValue();
     copyDataParser.parseWhitespace();
     if (getJsonValue().isEmptyValue()) {
@@ -79,6 +80,7 @@ void crawler::JsonParser::parseArray() {
     pos = copyDataParser.getPos() + pos;
     if (currentChar() == ',') {
       pos++;
+      parseWhitespace();
     } else if (currentChar() == ']') {
       pos++;
       break;

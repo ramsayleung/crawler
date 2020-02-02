@@ -490,11 +490,40 @@ void testJsonParseEscapeString() {
   testJsonParseError("PARSE_INVALID_STRING_ESCAPE", "\"\\v\"");
 }
 
-void testJsonParseArray(){
-    crawler::JsonParser arrayParser("[\"hello\"]");
-    crawler::JsonValue value =  arrayParser.parse();
-    ASSERT_TRUE(value.getType() == crawler::JsonType::ARRAY);
-    ASSERT_TRUE(value.getArray().front().getType() == crawler::JsonType::STRING);
+void testJsonParseArray() {
+  crawler::JsonParser arrayParser("[\"hello\"]");
+  crawler::JsonValue value = arrayParser.parse();
+  ASSERT_TRUE(value.getType() == crawler::JsonType::ARRAY);
+  ASSERT_TRUE(value.getArray().front().getType() == crawler::JsonType::STRING);
+
+  crawler::JsonParser arrayParser2("[ null , false , true , 123 , \"abc\" ]");
+  value = arrayParser2.parse();
+  ASSERT_TRUE(value.getType() == crawler::JsonType::ARRAY);
+  ASSERT_TRUE(value.getArray().size() == 5);
+  crawler::JsonArray array = value.getArray();
+  ASSERT_TRUE(array[0].getType() == crawler::JsonType::_NULL);
+  ASSERT_TRUE(array[1].getType() == crawler::JsonType::BOOLEAN);
+  ASSERT_TRUE(array[2].getType() == crawler::JsonType::BOOLEAN);
+  ASSERT_TRUE(array[3].getType() == crawler::JsonType::NUMBER);
+  ASSERT_TRUE(array[4].getType() == crawler::JsonType::STRING);
+
+  crawler::JsonParser arrayParser3(
+      "[ [ ] , [ 0 ] , [ 0 , 1 ] , [ 0 , 1 , 2 ] ]");
+  value = arrayParser3.parse();
+  array = value.getArray();
+  crawler::JsonArray subArray = array[1].getArray();
+  ASSERT_TRUE(array[0].getType() == crawler::JsonType::ARRAY);
+  ASSERT_TRUE(array[1].getType() == crawler::JsonType::ARRAY);
+  ASSERT_TRUE(subArray[0].getType() == crawler::JsonType::NUMBER);
+  ASSERT_TRUE(subArray.size() == 1);
+  ASSERT_TRUE(array[2].getType() == crawler::JsonType::ARRAY);
+  subArray = array[2].getArray();
+  ASSERT_TRUE(subArray.size() == 2);
+  ASSERT_TRUE(subArray[0].getType() == crawler::JsonType::NUMBER);
+  ASSERT_TRUE(array[3].getType() == crawler::JsonType::ARRAY);
+  subArray = array[3].getArray();
+  ASSERT_TRUE(subArray.size() == 3);
+  ASSERT_TRUE(subArray[0].getType() == crawler::JsonType::NUMBER);
 }
 /// JSON End
 
