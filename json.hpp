@@ -4,9 +4,10 @@
 #include <cassert>
 #include <cstddef>
 #include <exception>
+#include <map>
 #include <string>
-#include <vector>
 #include <variant>
+#include <vector>
 
 namespace crawler {
 class JsonValue;
@@ -23,7 +24,9 @@ private:
 };
 
 using JsonArray = std::vector<JsonValue>;
-using JsonData = std::variant<double, bool, std::nullptr_t, std::string, JsonArray>;
+using JsonObject = std::map<std::string, JsonValue>;
+using JsonData = std::variant<double, bool, std::nullptr_t, std::string,
+                              JsonArray, JsonObject>;
 
 class JsonValue {
 public:
@@ -35,8 +38,6 @@ public:
 
   void setType(JsonType _type);
 
-
-
   double getNumber();
 
   std::string getString();
@@ -47,6 +48,8 @@ public:
 
   JsonArray getArray();
 
+  JsonObject getObject();
+
   bool isEmptyValue();
 
 private:
@@ -54,6 +57,7 @@ private:
 
 public:
   void setData(const JsonData &_data);
+
 private:
   JsonType type;
 };
@@ -64,6 +68,10 @@ public:
 
   // Parse string to JsonValue
   JsonValue parse();
+
+  void setJson(const std::string& _json);
+
+  void setPos(const size_t _pos);
 
   [[nodiscard]] const std::string &getJson() const;
 
@@ -120,6 +128,11 @@ private:
   /// Parse Array, the array format:
   /// array = %x5B ws [ value *( ws %x2C ws value ) ] ws %x5D
   void parseArray();
+
+  /// Paser object, the object format:
+  /// member = string ws %x3A ws value
+  /// object = %x7B ws [ member *( ws %x2C ws member ) ] ws %x7D
+  void parseObject();
 
   /// Return current Char
   char currentChar();

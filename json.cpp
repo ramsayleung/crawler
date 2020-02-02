@@ -28,6 +28,14 @@ crawler::JsonParser::JsonParser(std::string json)
 
 const std::string &crawler::JsonParser::getJson() const { return json; }
 
+void crawler::JsonParser::setJson(const std::string &_json){
+    JsonParser::json = _json;
+}
+
+void crawler::JsonParser::setPos(const size_t _pos){
+    JsonParser::pos = _pos;
+}
+
 void crawler::JsonParser::parseTrue() {
   parseLiteralness(TRUE, JsonType::BOOLEAN);
   this->jsonValue.setData(true);
@@ -55,16 +63,78 @@ void crawler::JsonParser::parseLiteralness(const std::string &literal,
   this->jsonValue.setType(jsonType);
 }
 
+void crawler::JsonParser::parseObject(){
+    jsonValue.setType(crawler::JsonType::OBJECT);
+    assert(consumeChar() == '{');
+    parseWhitespace();
+    if(currentChar()=='}'){
+        pos++;
+        JsonObject emptyValue;
+        jsonValue.setData(emptyValue);
+        return;
+    }
+    while (true) {
+
+        // 1. parse key
+       if(currentChar() != '\"'){
+            throw std::runtime_error("PARSE_OBJECT_MISS_KEY");
+       }
+
+        std::string copyData = json.substr(pos, json.length() - pos);
+        JsonParser copyDataParser(copyData);
+        copyDataParser.parseString();
+        std::string key = copyDataParser.getJsonValue().getString();
+        pos = copyDataParser.getPos() + pos;
+
+        // 2. parse whitespace colon whitespace
+        parseWhitespace();
+        if(consumeChar()!=':'){
+            throw std::runtime_error("PARSE_OBJECT_MISS_COLON");
+        }
+        parseWhitespace();
+
+        // 3. parse jsonvalue.
+        copyData = json.substr(pos, json.length() - pos);
+        copyDataParser.setJson(copyData);
+        copyDataParser.setPos(0);
+        copyDataParser.parseValue();
+        copyDataParser.parseWhitespace();
+        if(getJsonValue().isEmptyValue()){
+            JsonObject emptyValue;
+            jsonValue.setData(emptyValue);
+        }
+        JsonObject object = getJsonValue().getObject();
+        object.insert(std::pair<std::string, JsonValue>(key, copyDataParser.getJsonValue()));
+        pos = copyDataParser.getPos() + pos;
+
+        // 4. parse whitespace [comma | right-curly-brace] whitespace
+        parseWhitespace();
+        if(currentChar()==','){
+            pos++;
+            parseWhitespace();
+        } else if (currentChar() == '}'){
+            pos++;
+            jsonValue.setData(object);
+            break;
+        } else{
+            throw std::runtime_error("PARSE_MISS_COMMA_OR_CURLY_BRACKET");
+        }
+    }
+}
 void crawler::JsonParser::parseArray() {
   jsonValue.setType(crawler::JsonType::ARRAY);
   assert(consumeChar() == '[');
   parseWhitespace();
+
+  // empty array
   if (currentChar() == ']') {
     pos++;
     JsonArray emptyValue;
     jsonValue.setData(emptyValue);
     return;
   }
+
+  // parse value.
   while (true) {
     std::string copyData = json.substr(pos, json.length() - pos);
     JsonParser copyDataParser(copyData);
@@ -209,6 +279,8 @@ void crawler::JsonParser::parseValue() {
     return parseString();
   case '[':
     return parseArray();
+  case '{':
+      return parseObject();
   case '\0':
     throw std::runtime_error("PARSE_EXPECT_VALUE");
   default:
@@ -270,6 +342,11 @@ std::nullptr_t crawler::JsonValue::getNull() {
 crawler::JsonArray crawler::JsonValue::getArray() {
   assert(type == JsonType::ARRAY);
   return std::get<crawler::JsonArray>(data);
+}
+
+crawler::JsonObject crawler::JsonValue::getObject(){
+    assert(type == JsonType::OBJECT);
+    return std::get<crawler::JsonObject>(data);
 }
 
 bool crawler::JsonValue::isEmptyValue() {

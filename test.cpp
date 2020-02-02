@@ -525,9 +525,37 @@ void testJsonParseArray() {
   ASSERT_TRUE(subArray.size() == 3);
   ASSERT_TRUE(subArray[0].getType() == crawler::JsonType::NUMBER);
 }
+
+void testJsonParseObject(){
+    crawler::JsonParser objectParser("{\"number\": 2}");
+    crawler::JsonValue value = objectParser.parse();
+    ASSERT_TRUE(value.getType() == crawler::JsonType::OBJECT);
+    ASSERT_TRUE(value.getObject().size() == 1);
+}
+
+void testJsonParseObjectError(){
+    testJsonParseError("PARSE_OBJECT_MISS_KEY", "{:1,");
+    testJsonParseError("PARSE_OBJECT_MISS_KEY", "{1:1,");
+    testJsonParseError("PARSE_OBJECT_MISS_KEY", "{true:1,");
+    testJsonParseError("PARSE_OBJECT_MISS_KEY", "{false:1,");
+    testJsonParseError("PARSE_OBJECT_MISS_KEY", "{null:1,");
+    testJsonParseError("PARSE_OBJECT_MISS_KEY", "{[]:1,");
+    testJsonParseError("PARSE_OBJECT_MISS_KEY", "{{}:1,");
+    testJsonParseError("PARSE_OBJECT_MISS_KEY", "{\"a\":1,");
+
+    testJsonParseError("PARSE_OBJECT_MISS_COLON", "{\"a\"}");
+    testJsonParseError("PARSE_OBJECT_MISS_COLON", "{\"a\",\"b\"}");
+
+    testJsonParseError("PARSE_MISS_COMMA_OR_CURLY_BRACKET", "{\"a\":1");
+    testJsonParseError("PARSE_MISS_COMMA_OR_CURLY_BRACKET", "{\"a\":1]");
+    testJsonParseError("PARSE_MISS_COMMA_OR_CURLY_BRACKET", "{\"a\":1 \"b\"");
+    testJsonParseError("PARSE_MISS_COMMA_OR_CURLY_BRACKET", "{\"a\":{}");
+}
 /// JSON End
 
 int main() {
+  testJsonParseObjectError();
+  testJsonParseObject();
   testJsonParseArray();
   testJsonParseEscapeString();
   testJsonParseString();
