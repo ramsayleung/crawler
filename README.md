@@ -159,7 +159,9 @@ crawler::Nodes crawler::Node::select(Evaluator *evaluator) {
 3. `el[attr]`: 组合节点标签名和属性名进行查询, 例如: `div[name]: <div name="ramsay" />>`
 4. `parent > child`: 组合父节点和子节点条件进行查询, 查询的是`child`节点, 如`div.content > p`找到的是`p`节点. 例如: `div#parent > div#child: <div id="parent"><div id="child"></div></div>`.
 
-### Json解析[WIP]
+### Json解析
+
+代码已完成, 文档待更新.
 
 ### Http封装[WIP]
 
